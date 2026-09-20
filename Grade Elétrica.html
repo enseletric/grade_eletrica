@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Planejador de Grade — Engenharia Elétrica POLI-USP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ---------- tema escuro (padrão) ---------- */
+:root{
+  --paper:#0E151D;
+  --surface:#18212C;
+  --surface-2:#1F2A37;
+  --ink:#E7EEF6;
+  --ink-2:#A2B4C7;
+  --ink-3:#71879D;
+  --line:#2C3A4A;
+  --line-soft:#243040;
+  --blue:#5AA2EA;      --blue-soft:#17304A;
+  --ok:#5BD08B;        --ok-bg:#14301F;
+  --warn:#EBB44F;      --warn-bg:#382A10;
+  --bad:#F08A80;       --bad-bg:#3A1C1A;
+  --mute:#8EA0B4;      --mute-bg:#252F3C;
+  --lock:#B69BF0;      --lock-bg:#2A2240;
+  --hd-bg:#090F16;
+  --hd-panel:#121C26;
+  --hd-line:#25333F;
+  --hd-fg:#EAF1F8;
+  --hd-dim:#8DA2B6;
+  --hd-dim2:#6C8195;
+  --hd-input:#1A2734;
+  --toast-bg:#E7EEF6;
+  --toast-fg:#0E151D;
+  --hatch-a:#20193A;
+  --hatch-b:#261F44;
+  --shadow:0 1px 2px rgba(0,0,0,.35);
+  --radius:7px;
+  --sans:"IBM Plex Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+}
+/* ---------- tema claro ---------- */
+html[data-theme="light"]{
+  --paper:#E7ECF2;
+  --surface:#FFFFFF;
+  --surface-2:#F3F6FA;
+  --ink:#13202E;
+  --ink-2:#55647A;
+  --ink-3:#8493A6;
+  --line:#CBD5E1;
+  --line-soft:#E2E8F0;
+  --blue:#1F5FA8;      --blue-soft:#DCE8F6;
+  --ok:#1A7A4C;        --ok-bg:#DFF1E7;
+  --warn:#B0701A;      --warn-bg:#FBEEDA;
+  --bad:#B02F2B;       --bad-bg:#FADFDD;
+  --mute:#64748B;      --mute-bg:#E5E9EF;
+  --lock:#6D34D6;      --lock-bg:#EDE6FB;
+  --hd-bg:#13202E;
+  --hd-panel:#182637;
+  --hd-line:#33445A;
+  --hd-fg:#F2F6FA;
+  --hd-dim:#93A5BA;
+  --hd-dim2:#7D90A6;
+  --hd-input:#1E2E40;
+  --toast-bg:#13202E;
+  --toast-fg:#FFFFFF;
+  --hatch-a:#FBF9FE;
+  --hatch-b:#F1EAFC;
+  --shadow:0 1px 2px rgba(19,32,46,.06);
+}
+html{box-sizing:border-box;scroll-padding-top:1rem}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- cabeçalho ---------- */
+header{
+  background:var(--hd-bg);color:var(--hd-fg);
+  padding:calc(14px + env(safe-area-inset-top,0px)) 20px 0;
+}
+.hd-top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;max-width:1560px;margin:0 auto}
+.hd-title h1{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em}
+.hd-title p{margin:2px 0 0;font-size:12.5px;color:var(--hd-dim)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.ctl{display:flex;flex-direction:column;gap:3px}
+.ctl label{font-size:11px;color:var(--hd-dim);font-weight:500}
+.ctl select,.ctl input{
+  background:var(--hd-input);border:1px solid var(--hd-line);color:var(--hd-fg);
+  border-radius:5px;padding:5px 8px;font-size:13px;min-width:84px;
+}
+.ctl input[type=number]{width:74px}
+#themeBtn{
+  background:var(--hd-input);border:1px solid var(--hd-line);color:var(--hd-fg);
+  border-radius:5px;padding:6px 11px;font-size:13px;
+}
+#themeBtn:hover{border-color:var(--blue)}
+
+.metrics{
+  max-width:1560px;margin:14px auto 0;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+  background:var(--hd-line);border:1px solid var(--hd-line);border-radius:6px 6px 0 0;overflow:hidden;
+}
+.metric{background:var(--hd-panel);padding:9px 12px}
+.metric .k{font-size:11px;color:var(--hd-dim)}
+.metric .v{font-family:var(--mono);font-size:19px;font-weight:600;line-height:1.25;letter-spacing:-.02em;color:var(--hd-fg)}
+.metric .sub{font-size:10.5px;color:var(--hd-dim2);font-family:var(--mono)}
+.bar{height:3px;background:var(--hd-line);border-radius:2px;margin-top:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--blue)}
+.metric.alert{box-shadow:inset 0 0 0 1px var(--bad)}
+.metric.alert .k{color:var(--bad)}
+.metric.alert .v{color:var(--bad)}
+.metric.alert .bar i{background:var(--bad)}
+.metric.clickable{cursor:pointer}
+.metric.clickable:hover{background:var(--hd-line)}
+
+nav.tabs{max-width:1560px;margin:0 auto;display:flex;gap:2px;overflow-x:auto}
+nav.tabs button{
+  background:transparent;border:0;color:var(--hd-dim);padding:11px 15px;font-size:13.5px;
+  font-weight:500;border-bottom:2px solid transparent;white-space:nowrap;
+}
+nav.tabs button[aria-selected=true]{color:var(--hd-fg);border-bottom-color:var(--blue)}
+nav.tabs button:hover{color:var(--hd-fg)}
+
+/* ---------- layout ---------- */
+main{max-width:1560px;margin:0 auto;padding:18px 20px calc(48px + env(safe-area-inset-bottom,0px))}
+.panel{display:none}
+.panel.on{display:block}
+h2.sec{font-size:15px;font-weight:600;margin:0 0 3px}
+p.sec{margin:0 0 16px;color:var(--ink-2);font-size:13px;max-width:72ch}
+
+.toolbar{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:10px 12px;margin-bottom:16px;
+}
+.btn{
+  background:var(--surface);border:1px solid var(--line);border-radius:5px;
+  padding:6px 11px;font-size:13px;font-weight:500;color:var(--ink);
+}
+.btn:hover{background:var(--surface-2);border-color:var(--ink-3)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#06121E}
+.btn.primary:hover{filter:brightness(1.1)}
+html[data-theme="light"] .btn.primary{color:#fff}
+.btn.sm{padding:3px 8px;font-size:12px}
+.spacer{flex:1}
+.hint{font-size:12px;color:var(--ink-3)}
+.warnbar{
+  background:var(--warn-bg);border:1px solid var(--warn);color:var(--warn);
+  border-radius:var(--radius);padding:9px 12px;margin-bottom:14px;font-size:12.5px;
+}
+
+/* ---------- trilho de semestres ---------- */
+.rail{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;align-items:flex-start}
+.sem{
+  flex:0 0 306px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);display:flex;flex-direction:column;box-shadow:var(--shadow);
+}
+.sem.drop{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.sem-hd{padding:10px 12px;border-bottom:1px solid var(--line-soft)}
+.sem-hd .row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.sem-n{font-size:14px;font-weight:600}
+.sem-when{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.sem-cr{display:flex;align-items:center;gap:7px;margin-top:6px}
+.meter{flex:1;height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden;border:1px solid var(--line-soft)}
+.meter i{display:block;height:100%;background:var(--blue)}
+.meter.over i{background:var(--warn)}
+.meter.bad i{background:var(--bad)}
+.sem-cr b{font-family:var(--mono);font-size:12px;font-weight:600}
+.sem-cr.over b{color:var(--warn)}
+.sem-cr.bad b{color:var(--bad)}
+.grp{padding:8px 10px 2px;font-size:10.5px;font-weight:600;color:var(--ink-3);letter-spacing:.02em}
+.list{padding:2px 10px 10px;display:flex;flex-direction:column;gap:5px;min-height:14px}
+.sem-ft{padding:8px 10px;border-top:1px solid var(--line-soft);display:flex;gap:6px;flex-wrap:wrap}
+
+/* disciplina */
+.c{
+  border:1px solid var(--line);border-left:3px solid var(--mute);border-radius:6px;
+  background:var(--surface);padding:6px 8px;display:flex;gap:8px;align-items:flex-start;
+}
+.c[draggable=true]{cursor:grab}
+.c.dragging{opacity:.4}
+.c-main{flex:1;min-width:0}
+.c-code{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);font-weight:500}
+.c-name{font-size:12.5px;line-height:1.3;font-weight:500}
+.c-meta{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
+.cr{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line-soft);border-radius:3px;padding:0 4px}
+.c-side{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.c select{border:1px solid var(--line);border-radius:4px;padding:2px 4px;font-size:11.5px;background:var(--surface-2);max-width:116px}
+.x{background:none;border:0;color:var(--ink-3);font-size:14px;line-height:1;padding:1px 3px;border-radius:3px}
+.x:hover{background:var(--bad-bg);color:var(--bad)}
+.c.s-aprovado{border-left-color:var(--ok);background:linear-gradient(90deg,var(--ok-bg) 0 4px,var(--surface) 4px)}
+.c.s-requisito{border-left-color:var(--warn);background:linear-gradient(90deg,var(--warn-bg) 0 4px,var(--surface) 4px)}
+.c.s-reprovado{border-left-color:var(--bad);background:linear-gradient(90deg,var(--bad-bg) 0 4px,var(--surface) 4px)}
+.c.s-trancado{border-left-color:var(--mute);background:var(--surface-2);opacity:.82}
+.c.s-trancado .c-name{text-decoration:line-through;text-decoration-color:var(--ink-3)}
+.c.locked{border-left-color:var(--lock);background:repeating-linear-gradient(135deg,var(--hatch-a),var(--hatch-a) 6px,var(--hatch-b) 6px,var(--hatch-b) 12px)}
+.c.dup{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn)}
+.tag{font-size:10px;font-weight:600;border-radius:3px;padding:1px 5px;border:1px solid}
+.tag.dp{color:var(--bad);background:var(--bad-bg);border-color:var(--bad)}
+.tag.lock{color:var(--lock);background:var(--lock-bg);border-color:var(--lock)}
+.tag.flex{color:var(--blue);background:var(--blue-soft);border-color:var(--blue)}
+.tag.extra{color:var(--ink-2);background:var(--surface-2);border-color:var(--line)}
+.tag.elet{color:var(--ok);background:var(--ok-bg);border-color:var(--ok)}
+.tag.warn{color:var(--warn);background:var(--warn-bg);border-color:var(--warn)}
+.tag.pin{color:var(--blue);background:var(--blue-soft);border-color:var(--blue)}
+.c-main[title]{cursor:default}
+.why{font-size:10.5px;color:var(--lock);margin-top:3px;line-height:1.3}
+
+/* ---------- consulta ---------- */
+.grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(322px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.card-hd{padding:9px 12px;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;align-items:baseline;gap:8px;background:var(--surface-2)}
+.card-hd b{font-size:13.5px}
+.card-hd span{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);text-align:right}
+table.t{width:100%;border-collapse:collapse}
+table.t td{padding:5px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t td.cd{font-family:var(--mono);font-size:11px;color:var(--ink-3);width:64px;white-space:nowrap}
+table.t td.nm{font-size:12.5px}
+table.t td.cc{font-family:var(--mono);font-size:11.5px;text-align:right;width:30px;color:var(--ink-2)}
+.req-note{font-size:10.5px;color:var(--ink-3);margin-top:1px}
+
+/* ---------- DPs ---------- */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.dp-list{padding:10px;display:flex;flex-direction:column;gap:5px;min-height:56px}
+.dp{border:1px solid var(--line);border-left:3px solid var(--mute);border-radius:6px;background:var(--surface);padding:6px 8px;display:flex;gap:8px;align-items:center;cursor:grab}
+.dp.t-direta{border-left-color:var(--bad)}
+.dp.t-cascata{border-left-color:var(--lock)}
+.dp.t-travada{border-left-color:var(--warn)}
+.dp.dragging{opacity:.4}
+.dp .rank{font-family:var(--mono);font-size:11px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line);border-radius:3px;min-width:21px;text-align:center;padding:1px 0;font-weight:600}
+.dp .rank.top{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
+.dp .arrows{display:flex;flex-direction:column;gap:1px}
+.dp .arrows button{border:1px solid var(--line);background:var(--surface-2);border-radius:3px;font-size:9px;line-height:1;padding:2px 4px;color:var(--ink-2)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.empty{padding:16px 12px;text-align:center;color:var(--ink-3);font-size:12.5px}
+
+/* ---------- ênfases ---------- */
+.emph-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.stat{display:flex;gap:14px;padding:9px 12px;border-bottom:1px solid var(--line-soft);background:var(--surface-2)}
+.stat div{font-size:11.5px;color:var(--ink-2)}
+.stat b{display:block;font-family:var(--mono);font-size:16px;color:var(--ink);font-weight:600}
+.mini{display:flex;flex-direction:column;gap:4px;padding:10px}
+.mini .c{padding:5px 8px}
+
+/* ---------- cenários ---------- */
+.scn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+.scn:last-child{border-bottom:0}
+.scn .nm{flex:1;font-size:13px;font-weight:500;min-width:140px}
+.scn .dt{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+textarea.io{width:100%;min-height:104px;border:1px solid var(--line);border-radius:6px;padding:9px;font-family:var(--mono);font-size:11.5px;resize:vertical;background:var(--surface);color:var(--ink)}
+#scnName{border:1px solid var(--line);border-radius:5px;padding:6px 9px;font-size:13px;flex:1;min-width:180px;background:var(--surface);color:var(--ink)}
+
+/* ---------- modal ---------- */
+.veil{position:fixed;inset:0;background:rgba(3,8,14,.66);display:none;align-items:center;justify-content:center;padding:18px;z-index:40}
+.veil.on{display:flex}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:9px;width:min(660px,100%);max-height:86vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-hd{padding:13px 16px;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.modal-hd b{font-size:14.5px}
+.modal-bd{padding:14px 16px;overflow:auto}
+.modal-ft{padding:11px 16px;border-top:1px solid var(--line-soft);display:flex;gap:8px;justify-content:flex-end}
+.field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px}
+.field label{font-size:12px;font-weight:500;color:var(--ink-2)}
+.field input,.field select{border:1px solid var(--line);border-radius:5px;padding:7px 9px;font-size:13.5px;background:var(--surface-2);color:var(--ink)}
+.pick{display:flex;flex-direction:column;gap:4px;max-height:360px;overflow:auto;border:1px solid var(--line-soft);border-radius:6px;padding:6px}
+.pick .head{font-size:10.5px;font-weight:600;color:var(--ink-3);padding:6px 6px 2px}
+.pick button{display:flex;gap:9px;align-items:center;text-align:left;width:100%;background:var(--surface);border:1px solid transparent;border-radius:5px;padding:6px 8px}
+.pick button:hover{background:var(--blue-soft);border-color:var(--blue)}
+.pick button.used{opacity:.55}
+.pick button.blocked{opacity:.45;cursor:not-allowed}
+.pick button.blocked:hover{background:var(--surface);border-color:transparent}
+.pick .cd{font-family:var(--mono);font-size:11px;color:var(--ink-3);min-width:62px}
+.pick .nm{flex:1;font-size:12.5px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.eg{border:1px solid var(--line-soft);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.eg-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:var(--surface-2);font-size:12.5px;font-weight:600}
+.eg-hd span{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink-2)}
+.eg-hd span.full{color:var(--ok)}
+.eg-hd span.short{color:var(--warn)}
+.eg label{display:flex;gap:9px;align-items:center;padding:6px 10px;border-top:1px solid var(--line-soft);font-size:12.5px;cursor:pointer}
+.eg label:hover{background:var(--surface-2)}
+.eg input{accent-color:var(--blue)}
+
+#toast{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  background:var(--toast-bg);color:var(--toast-fg);padding:9px 15px;border-radius:6px;font-size:13px;
+  z-index:60;opacity:0;pointer-events:none;transition:opacity .18s;max-width:90vw;text-align:center;
+}
+#toast.on{opacity:1}
+#toast.err{background:var(--bad);color:#1A0B0A}
+html[data-theme="light"] #toast.err{color:#fff}
+
+@media(max-width:640px){
+  main{padding:14px 12px 60px}
+  header{padding-left:12px;padding-right:12px}
+  .sem{flex-basis:270px}
+  .metric .v{font-size:17px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-top">
+    <div class="hd-title">
+      <h1>Planejador de Grade — Engenharia Elétrica</h1>
+      <p>Escola Politécnica da USP · ciclo básico, ênfases e módulo do 5º ano</p>
+    </div>
+    <div class="controls">
+      <div class="ctl"><label for="inYear">Ingresso</label>
+        <input type="number" id="inYear" min="2010" max="2040" step="1" value="2026"></div>
+      <div class="ctl"><label for="inPer">Período</label>
+        <select id="inPer"><option value="1">1º sem</option><option value="2">2º sem</option></select></div>
+      <div class="ctl"><label for="emph">Ênfase</label>
+        <select id="emph">
+          <option value="energia">Energia e Automação Elétricas</option>
+          <option value="controle">Automação e Controle</option>
+          <option value="telecom">Telecomunicações</option>
+          <option value="eletronica">Eletrônica e Sistemas</option>
+        </select></div>
+      <div class="ctl"><label for="mod">Módulo do 5º ano</label>
+        <select id="mod">
+          <option value="renovaveis">Energias Renováveis</option>
+          <option value="eeae">Especialização em Energia e Automação</option>
+          <option value="fse">Fundamentos de Sistemas Eletrônicos</option>
+          <option value="ebm">Tópicos de Engenharia Biomédica</option>
+          <option value="pec">Princípios de Engenharia de Computação</option>
+          <option value="generico">Módulo genérico (12 + 12)</option>
+        </select></div>
+      <div class="ctl"><label for="maxCr">Máx. créditos/sem</label>
+        <input type="number" id="maxCr" min="12" max="40" step="1" value="28"></div>
+      <div class="ctl"><label for="fillMode">Preencher primeiro</label>
+        <select id="fillMode"><option value="ob">Obrigatórias</option><option value="dp">DPs</option></select></div>
+      <button id="themeBtn" title="Alternar tema">Modo claro</button>
+    </div>
+  </div>
+  <div class="metrics" id="metrics"></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="consulta" aria-selected="false">Grade completa</button>
+    <button role="tab" data-tab="plano" aria-selected="true">Planejador</button>
+    <button role="tab" data-tab="dps" aria-selected="false">Central de DPs</button>
+    <button role="tab" data-tab="enfases" aria-selected="false">Comparar ênfases</button>
+    <button role="tab" data-tab="cenarios" aria-selected="false">Cenários</button>
+  </nav>
+</header>
+
+<main>
+  <section class="panel" id="p-consulta">
+    <h2 class="sec">Grade curricular oficial</h2>
+    <p class="sec">Somente consulta. Os seis primeiros semestres são comuns a todos; a partir do 7º a grade segue a ênfase escolhida no topo da página, e o 9º e 10º incluem o módulo do 5º ano.</p>
+    <div class="toolbar">
+      <button class="btn" id="btnEletivas2">Escolher eletivas</button>
+      <div class="spacer"></div>
+      <span class="hint" id="modHint"></span>
+    </div>
+    <div class="grid-view" id="consultaGrid"></div>
+  </section>
+
+  <section class="panel on" id="p-plano">
+    <div id="dupWarn"></div>
+    <div class="toolbar">
+      <button class="btn primary" id="btnAuto">Organizar automaticamente</button>
+      <button class="btn" id="btnEletivas">Escolher eletivas</button>
+      <button class="btn" id="btnAddSem">Adicionar semestre</button>
+      <button class="btn" id="btnClear">Limpar situações</button>
+      <div class="spacer"></div>
+      <span class="hint" id="planHint"></span>
+    </div>
+    <div class="rail" id="rail"></div>
+  </section>
+
+  <section class="panel" id="p-dps">
+    <h2 class="sec">Central de DPs</h2>
+    <p class="sec">Tudo que saiu do semestre ideal, não só o que você reprovou: as disciplinas travadas em cascata contam igual. A ordem define quem é paga primeiro quando o limite de créditos aperta — arraste, ou use as setas.</p>
+    <div class="toolbar">
+      <div class="legend">
+        <span><i style="background:var(--bad)"></i>Reprovada, requisito ou trancada</span>
+        <span><i style="background:var(--lock)"></i>Atrasada por cascata</span>
+        <span><i style="background:var(--warn)"></i>Sem vaga no plano</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn sm" id="btnDpReset">Reordenar por semestre ideal</button>
+    </div>
+    <div class="toolbar"><div id="dpTotals" class="hint"></div></div>
+    <div class="two" id="dpArea"></div>
+  </section>
+
+  <section class="panel" id="p-enfases">
+    <h2 class="sec">O que cada ênfase libera</h2>
+    <p class="sec">Com as situações lançadas até aqui, veja quantas disciplinas do 7º e 8º semestres de cada ênfase já teriam requisito cumprido, e quanto de DP você levaria junto.</p>
+    <div class="emph-grid" id="emphGrid"></div>
+  </section>
+
+  <section class="panel" id="p-cenarios">
+    <h2 class="sec">Cenários salvos</h2>
+    <p class="sec">Guarde versões diferentes do plano — o realista, o otimista, o plano B — e alterne entre elas.</p>
+    <div class="toolbar">
+      <input type="text" id="scnName" placeholder="Nome do cenário">
+      <button class="btn primary" id="btnSaveScn">Salvar cenário atual</button>
+    </div>
+    <div class="card" id="scnList" style="margin-bottom:16px"></div>
+    <h2 class="sec">Exportar e importar</h2>
+    <p class="sec">Copie o texto abaixo para guardar em outro lugar, ou cole um plano exportado e carregue.</p>
+    <textarea class="io" id="io" spellcheck="false"></textarea>
+    <div class="toolbar" style="margin-top:9px">
+      <button class="btn" id="btnExport">Gerar texto do plano atual</button>
+      <button class="btn" id="btnImport">Carregar o texto colado</button>
+    </div>
+  </section>
+</main>
+
+<div class="veil" id="veil"><div class="modal" id="modal"></div></div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   1. BASE DE DADOS — grades do Júpiter (USP)
+   [código, nome, créditos-aula, semestre ideal, [requisitos], {flags}]
+   flags: any:[a,b] basta um · conj:[..] indicação de conjunto (não trava)
+          flex:true oferecida em semestre ímpar e par
+          elet:'grupo' optativa eletiva do grupo
+   ============================================================ */
+var RAW = {
+basico:[
+ ['4323101','Física I',3,1,[]],
+ ['MAC2166','Introdução à Computação',4,1,[]],
+ ['MAT2453','Cálculo Diferencial e Integral I',6,1,[]],
+ ['MAT3457','Álgebra Linear I',4,1,[]],
+ ['PCC3100','Representação Gráfica para Projeto',3,1,[]],
+ ['PEA3100','Energia, Meio Ambiente e Sustentabilidade',4,1,[]],
+ ['PMT3100','Fundamentos de Ciência e Engenharia dos Materiais',2,1,[]],
+ ['PMT3131','Química dos Materiais Aplicada à Engenharia Elétrica',2,1,[]],
+
+ ['0323100','Introdução à Engenharia Elétrica',3,2,[]],
+ ['4323102','Física II',2,2,['4323101','MAT2453']],
+ ['MAT2454','Cálculo Diferencial e Integral II',4,2,['MAT2453']],
+ ['MAT3458','Álgebra Linear II',4,2,['MAT3457']],
+ ['PCS3110','Algoritmos e Estruturas de Dados para Engenharia Elétrica',4,2,['MAC2166']],
+ ['PCS3111','Laboratório de Programação Orientada a Objetos',3,2,['MAC2166']],
+ ['PME3100','Mecânica I',6,2,['MAT2453','MAT3457']],
+
+ ['0303200','Probabilidade',2,3,['MAT2453']],
+ ['4323201','Física Experimental A',2,3,['4323101']],
+ ['4323203','Física III',4,3,['4323102','MAT2454']],
+ ['MAT2455','Cálculo Diferencial e Integral III',4,3,['MAT2454','MAT3458']],
+ ['PCS3115','Sistemas Digitais I',4,3,[]],
+ ['PEF3208','Fundamentos de Mecânica das Estruturas',2,3,[]],
+ ['PSI3211','Circuitos Elétricos I',4,3,['MAT2453'],{flex:true}],
+ ['PSI3212','Laboratório de Circuitos Elétricos',4,3,[],{conj:['PSI3211']}],
+
+ ['4323202','Física Experimental B',2,4,['4323201','4323203']],
+ ['4323204','Física IV',4,4,['4323203','MAT2455']],
+ ['MAT2456','Cálculo Diferencial e Integral IV',4,4,['MAT2454','MAT3458']],
+ ['PCS3225','Sistemas Digitais II',4,4,['PCS3115']],
+ ['PRO3200','Estatística',4,4,['MAT2454','0303200']],
+ ['PSI3213','Circuitos Elétricos II',4,4,['PSI3211'],{flex:true}],
+ ['PSI3214','Laboratório de Instrumentação Elétrica',2,4,[],{conj:['PSI3213']}],
+ ['PTC3213','Eletromagnetismo',4,4,['4323203','MAT2455']],
+
+ ['4323301','Física Experimental C',2,5,['4323202','4323204']],
+ ['MAP3121','Métodos Numéricos e Aplicações',4,5,['MAT2453','MAC2166','MAT3457']],
+ ['PCS3335','Laboratório Digital A',3,5,['PCS3115','PCS3225']],
+ ['PEA3301','Introdução aos Sistemas de Potência',4,5,['PSI3213','PSI3211']],
+ ['PEA3306','Conversão Eletromecânica de Energia',4,5,['PTC3213','PSI3213']],
+ ['PEA3311','Laboratório de Conversão Eletromecânica de Energia',3,5,[],{conj:['PEA3306']}],
+ ['PSI3321','Eletrônica I',4,5,['PSI3211'],{flex:true}],
+ ['PTC3307','Sistemas e Sinais',4,5,['MAT3458']],
+
+ ['PME3332','Mecânica dos Fluidos: Noções, Laboratório e Aplicações',2,6,[]],
+ ['PME3344','Termodinâmica Aplicada',2,6,[]],
+ ['PSI3322','Eletrônica II',4,6,['PSI3321'],{flex:true}],
+ ['PSI3323','Laboratório de Eletrônica I',3,6,[],{conj:['PSI3322']}],
+ ['PTC3312','Laboratório de Controle',3,6,[],{conj:['PTC3313']}],
+ ['PTC3313','Sistemas de Controle',4,6,[]],
+ ['PTC3314','Ondas e Linhas',4,6,['PTC3213','PSI3213']],
+ ['PTC3360','Introdução a Redes e Comunicações',4,6,['PTC3307']],
+ ['PTC3361','Introdução ao Processamento Digital de Sinais',2,6,['PTC3307']]
+],
+
+energia:[
+ ['PEA3400','Máquinas Elétricas I',4,7,['PEA3306']],
+ ['PEA3401','Laboratório de Instalações Elétricas',2,7,[]],
+ ['PEA3402','Instalações Elétricas',2,7,[]],
+ ['PEA3410','Sistemas de Potência I',4,7,['PEA3301']],
+ ['PEA3411','Introdução à Automação de Sistemas Elétricos',2,7,['PTC3361']],
+ ['PEA3413','Automação de Sistemas Industriais',2,7,[]],
+ ['PEA3420','Produção de Energia',4,7,[]],
+ ['PEA3489','Eletrônica de Potência I',4,7,['PSI3213']],
+ ['PRO3811','Fundamentos de Administração',2,7,[]],
+ ['PEA3405','Laboratório de Máquinas Elétricas',2,8,['PEA3400']],
+ ['PEA3406','Laboratório de Sistemas de Potência',2,8,['PEA3301']],
+ ['PEA3414','Máquinas Elétricas II',2,8,['PEA3306']],
+ ['PEA3416','Proteção e Automação de Sistemas Elétricos de Potência I',2,8,['PEA3411']],
+ ['PEA3417','Sistemas de Potência II',4,8,['PEA3301']],
+ ['PEA3418','Laboratório de Automação de Sistemas Industriais',2,8,[]],
+ ['PEA3430','Laboratório de Energia',2,8,[]],
+ ['PEA3440','Uso da Energia Elétrica',2,8,[]],
+ ['PEA3490','Eletrônica de Potência II',4,8,['PEA3489']],
+ ['PRO3821','Fundamentos de Economia',2,8,[]],
+ ['PEA3500','Projeto de Formatura I',1,9,[],{any:['PEA3410','PEA3414']}],
+ ['PEA3600','Estágio Supervisionado',1,9,[]],
+ ['PEA3507','Projeto de Formatura II',1,10,['PEA3500']]
+],
+
+controle:[
+ ['PRO3811','Fundamentos de Administração',2,7,[]],
+ ['PRO3821','Fundamentos de Economia',2,7,[]],
+ ['PTC3413','Controle Multivariável',4,7,[]],
+ ['PTC3415','Modelagem e Simulação',4,7,[]],
+ ['PTC3418','Laboratório de Automação',4,7,[],{conj:['PTC3419']}],
+ ['PTC3419','Controle Digital',4,7,[],{conj:['PTC3418']}],
+ ['PTC3414','Controle de Processos Industriais',4,8,[]],
+ ['PTC3417','Controle Não Linear',4,8,[]],
+ ['PTC3420','Programação Matemática Aplicada a Controle',4,8,[]],
+ ['PTC3421','Instrumentação Industrial',4,8,[]],
+ ['PTC3471','Práticas de Projeto de Sistemas de Controle',4,8,[]],
+ ['PTC3501','Estágio Supervisionado',1,9,[]],
+ ['PTC3530','Laboratório de Projeto de Automação e Controle I',2,9,['PTC3419','PTC3313']],
+ ['PTC3531','Laboratório de Projeto de Automação e Controle II',2,10,['PTC3530']]
+],
+
+telecom:[
+ ['PRO3811','Fundamentos de Administração',2,7,[]],
+ ['PRO3821','Fundamentos de Economia',2,7,[]],
+ ['PTC3405','Processos Estocásticos',4,7,['0303200','PTC3361']],
+ ['PTC3424','Processamento Digital de Sinais',4,7,['PTC3361']],
+ ['PTC3432','Teoria das Comunicações',4,7,['PTC3360']],
+ ['PTC3444','Antenas e Propagação',4,7,['PTC3314']],
+ ['PTC3450','Redes de Comunicação',4,7,['PTC3360']],
+ ['PSI3483','Ondas Eletromagnéticas em Meios Guiados',4,8,['PTC3314']],
+ ['PTC3429','Laboratório de Circuitos de Comunicações',4,8,['PTC3314','PSI3323']],
+ ['PTC3449','Sistemas de Comunicação',4,8,['PTC3432']],
+ ['PTC3451','Processamento Estatístico e Adaptativo',4,8,['PTC3424','PTC3405']],
+ ['PTC3452','Teoria da Informação e Codificação',4,8,['PTC3432']],
+ ['PTC3502','Estágio Supervisionado',1,9,[]],
+ ['PTC3527','Anteprojeto de Formatura em Telecomunicações',1,9,['PTC3432']],
+ ['PTC3528','Projeto de Formatura em Telecomunicações',1,10,['PTC3527']]
+],
+
+eletronica:[
+ ['PSI3421','Eletrônica III',4,7,[]],
+ ['PSI3431','Processamento Estatístico de Sinais',4,7,[]],
+ ['PSI3441','Arquitetura de Sistemas Embarcados',4,7,[]],
+ ['PSI3451','Projeto de Circuitos Lógicos Integrados',4,7,[]],
+ ['PSI3471','Fundamentos de Sistemas Eletrônicos Inteligentes',4,7,[]],
+ ['PSI3481','Sistemas Ópticos e de Micro-ondas',4,7,[]],
+ ['PRO3811','Fundamentos de Administração',2,8,[]],
+ ['PRO3821','Fundamentos de Economia',2,8,[]],
+ ['PSI3422','Laboratório de Sistemas Eletrônicos',4,8,[]],
+ ['PSI3432','Processamento de Áudio e Imagem',4,8,[],{elet:'psi8'}],
+ ['PSI3442','Projeto de Sistemas Embarcados',4,8,[],{elet:'psi8'}],
+ ['PSI3452','Projeto de Circuitos Integrados Digitais e Analógicos',4,8,[],{elet:'psi8'}],
+ ['PSI3472','Concepção e Implementação de Sistemas Eletrônicos Inteligentes',4,8,[],{elet:'psi8'}],
+ ['PSI3482','Antenas, Micro-ondas e Óptica Moderna',4,8,[],{elet:'psi8'}],
+ ['PSI3591','Projeto de Formatura I',2,9,[]],
+ ['PSI3593','Estágio Supervisionado',1,9,[]],
+ ['PSI3592','Projeto de Formatura II',2,10,[]]
+],
+
+/* ---------------- módulos do 5º ano ---------------- */
+mod_renovaveis:[
+ ['IEE0006','Biomassa como Fonte de Energia',4,9,[]],
+ ['PEA3450','Coleta e Armazenamento de Energia',4,9,[]],
+ ['PME3561','Engenharia de Energia Solar',4,9,[]],
+ ['PEA3560','Engenharia de Energia Hidroelétrica',4,10,[]],
+ ['PME3562','Engenharia de Energia Eólica',4,10,[]],
+ ['PME3563','Laboratório de Energias Renováveis',2,10,[]]
+],
+
+mod_eeae:[
+ ['0303541','Tópicos de Pesquisa em Engenharia I',4,9,[],{elet:'eeae9'}],
+ ['0303542','Tópicos de Pesquisa em Engenharia II',4,9,[],{elet:'eeae9'}],
+ ['0303543','Tópicos de Pesquisa em Engenharia III',4,9,[],{elet:'eeae9'}],
+ ['PEA3450','Coleta e Armazenamento de Energia',4,9,[],{elet:'eeae9'}],
+ ['PEA3503','Subestações e Equipamentos',4,9,['PEA3301'],{elet:'eeae9'}],
+ ['0303544','Tópicos de Pesquisa em Engenharia IV',4,10,[],{elet:'eeae10'}],
+ ['0303545','Tópicos de Pesquisa em Engenharia V',4,10,[],{elet:'eeae10'}],
+ ['0303546','Tópicos de Pesquisa em Engenharia VI',4,10,[],{elet:'eeae10'}],
+ ['PEA3524','Laboratório de Automação e Proteção de Sistemas Elétricos',4,10,[],{elet:'eeae10'}],
+ ['PEA3550','Acionamentos Elétricos Industriais',4,10,['PEA3400','PEA3414'],{elet:'eeae10'}]
+],
+
+mod_fse:[
+ ['PSI3421','Eletrônica III',4,9,[],{elet:'fse9'}],
+ ['PSI3431','Processamento Estatístico de Sinais',4,9,[],{elet:'fse9'}],
+ ['PSI3441','Arquitetura de Sistemas Embarcados',4,9,[],{elet:'fse9'}],
+ ['PSI3451','Projeto de Circuitos Lógicos Integrados',4,9,[],{elet:'fse9'}],
+ ['PSI3471','Fundamentos de Sistemas Eletrônicos Inteligentes',4,9,[],{elet:'fse9'}],
+ ['PSI3481','Sistemas Ópticos e de Micro-ondas',4,9,[],{elet:'fse9'}],
+ ['PSI3422','Laboratório de Sistemas Eletrônicos',4,10,[],{elet:'fse10'}],
+ ['PSI3432','Processamento de Áudio e Imagem',4,10,[],{elet:'fse10'}],
+ ['PSI3442','Projeto de Sistemas Embarcados',4,10,[],{elet:'fse10'}],
+ ['PSI3452','Projeto de Circuitos Integrados Digitais e Analógicos',4,10,[],{elet:'fse10'}],
+ ['PSI3472','Concepção e Implementação de Sistemas Eletrônicos Inteligentes',4,10,[],{elet:'fse10'}],
+ ['PSI3482','Antenas, Micro-ondas e Óptica Moderna',4,10,[],{elet:'fse10'}]
+],
+
+mod_ebm:[
+ ['0303541','Tópicos de Pesquisa em Engenharia I',4,9,[],{elet:'ebm9'}],
+ ['0303542','Tópicos de Pesquisa em Engenharia II',4,9,[],{elet:'ebm9'}],
+ ['0303543','Tópicos de Pesquisa em Engenharia III',4,9,[],{elet:'ebm9'}],
+ ['PME3531','Mecânica dos Fluidos Aplicada a Sistemas Vasculares',4,9,[],{elet:'ebm9'}],
+ ['PME3533','Introdução à Biomecânica',4,9,[],{elet:'ebm9'}],
+ ['PSI3471','Fundamentos de Sistemas Eletrônicos Inteligentes',4,9,[],{elet:'ebm9'}],
+ ['PSI3571','Práticas em Reconhecimento de Padrões, Modelagem e Inteligência Computacional',4,9,[],{elet:'ebm9'}],
+ ['PTC3422','Modelos de Sistemas Biológicos',4,9,[],{elet:'ebm9'}],
+ ['PTC3570','Engenharia Clínica',4,9,[],{elet:'ebm9'}],
+ ['0303544','Tópicos de Pesquisa em Engenharia IV',4,10,[],{elet:'ebm10'}],
+ ['0303545','Tópicos de Pesquisa em Engenharia V',4,10,[],{elet:'ebm10'}],
+ ['0303546','Tópicos de Pesquisa em Engenharia VI',4,10,[],{elet:'ebm10'}],
+ ['PME3534','Técnicas Experimentais e Computacionais em Biomecânica e Sistemas Vasculares',4,10,[],{elet:'ebm10'}],
+ ['PMR3540','Robótica Médica',4,10,[],{elet:'ebm10'}],
+ ['PTC3435','Princípios de Instrumentação Biomédica',4,10,[],{elet:'ebm10'}],
+ ['PTC3456','Processamento de Sinais Biomédicos',4,10,[],{elet:'ebm10'}],
+ ['PTC3492','Princípios da Formação e Processamento de Imagens Médicas',4,10,[],{elet:'ebm10'}],
+ ['PTC3536','Bases para a Engenharia Neural',4,10,[],{elet:'ebm10'}]
+],
+
+mod_pec:[
+ ['PCS3412','Organização e Arquitetura de Computadores I',4,9,[]],
+ ['PCS3413','Engenharia de Software e Banco de Dados',4,9,[]],
+ ['PCS3414','Redes de Computadores I',4,9,[]],
+ ['PCS3422','Organização e Arquitetura de Computadores II',4,10,['PCS3412']],
+ ['PCS3438','Inteligência Artificial',4,10,[]],
+ ['PCS3446','Sistemas Operacionais',4,10,['PCS3412']]
+],
+
+mod_generico:[
+ ['MOD901','Disciplina do módulo — 9º semestre (A)',4,9,[]],
+ ['MOD902','Disciplina do módulo — 9º semestre (B)',4,9,[]],
+ ['MOD903','Disciplina do módulo — 9º semestre (C)',4,9,[]],
+ ['MOD1001','Disciplina do módulo — 10º semestre (A)',4,10,[]],
+ ['MOD1002','Disciplina do módulo — 10º semestre (B)',4,10,[]],
+ ['MOD1003','Disciplina do módulo — 10º semestre (C)',4,10,[]]
+]
+};
+
+var EMPH_LABEL = {
+  energia:'Energia e Automação Elétricas',
+  controle:'Automação e Controle',
+  telecom:'Telecomunicações',
+  eletronica:'Eletrônica e Sistemas'
+};
+var MOD_LABEL = {
+  renovaveis:'Energias Renováveis',
+  eeae:'Especialização em Energia e Automação Elétricas',
+  fse:'Fundamentos de Sistemas Eletrônicos',
+  ebm:'Tópicos de Engenharia Biomédica',
+  pec:'Princípios de Engenharia de Computação',
+  generico:'Módulo genérico'
+};
+var MOD_NOTE = {
+  renovaveis:'Três disciplinas obrigatórias no 9º e três no 10º.',
+  eeae:'Seis disciplinas eletivas, 24 créditos: 12 no 9º e 12 no 10º.',
+  fse:'12 créditos em eletivas no 9º e 12 no 10º.',
+  ebm:'Seis disciplinas eletivas dentre as listadas, 24 créditos no total.',
+  pec:'Obrigatórias. Não se destina a quem já cursa a ênfase de Computação.',
+  generico:'Espaço reservado de 12 + 12 créditos para qualquer módulo.'
+};
+/* quantos créditos eletivos cada grupo exige */
+var ELECTIVE_RULES = {psi8:12, eeae9:12, eeae10:12, fse9:12, fse10:12, ebm9:12, ebm10:12};
+var ELECTIVE_LABEL = {
+  psi8:'Optativas eletivas do 8º semestre — Eletrônica e Sistemas',
+  eeae9:'Módulo · 9º semestre', eeae10:'Módulo · 10º semestre',
+  fse9:'Módulo · 9º semestre', fse10:'Módulo · 10º semestre',
+  ebm9:'Módulo · 9º semestre', ebm10:'Módulo · 10º semestre'
+};
+var MIN_GRAD_CR = 251;
+
+function build(list,group){
+  return list.map(function(r){
+    return {code:r[0], name:r[1], cr:r[2], sem:r[3],
+      req:r[4]||[], any:(r[5]&&r[5].any)||null, conj:(r[5]&&r[5].conj)||null,
+      flex:!!(r[5]&&r[5].flex), elet:(r[5]&&r[5].elet)||null, group:group};
+  });
+}
+var POOL = {};
+Object.keys(RAW).forEach(function(g){ POOL[g]=build(RAW[g],g); });
+
+/* ============================================================
+   2. ESTADO
+   ============================================================ */
+var STATUSES = ['aprovado','requisito','reprovado','trancado'];
+var ST_LABEL = {aprovado:'Aprovado (≥5)',requisito:'Requisito (3–5)',reprovado:'Reprovado (<3)',trancado:'Trancado'};
+
+function freshState(){
+  return {
+    inYear:2026, inPer:1, emph:'energia', mod:'renovaveis',
+    maxCr:28, fillMode:'ob', theme:'dark',
+    nSem:10, plan:{}, status:{}, custom:{}, elet:[], fixed:{},
+    dpOrder:{odd:[],even:[]}
+  };
+}
+var S = freshState();
+var scenarios = [];
+
+var mem = {};
+var store = {
+  get:function(k){ try{ var v=localStorage.getItem(k); return v!==null?v:(k in mem?mem[k]:null);}catch(e){ return (k in mem?mem[k]:null); } },
+  set:function(k,v){ mem[k]=v; try{ localStorage.setItem(k,v); }catch(e){} }
+};
+
+/* ============================================================
+   3. CATÁLOGO ATIVO E ELETIVAS
+   ============================================================ */
+function modGroup(){ return 'mod_'+S.mod; }
+function activeGroups(){ return ['basico', S.emph, modGroup()]; }
+
+function electiveGroups(){
+  var out={};
+  activeGroups().forEach(function(g){
+    (POOL[g]||[]).forEach(function(c){
+      if(c.elet){ (out[c.elet]=out[c.elet]||[]).push(c); }
+    });
+  });
+  return out;
+}
+function ensureElectives(){
+  var eg=electiveGroups();
+  Object.keys(eg).forEach(function(k){
+    var need=ELECTIVE_RULES[k]||12;
+    var cr=0;
+    eg[k].forEach(function(c){ if(S.elet.indexOf(c.code)>=0) cr+=c.cr; });
+    for(var i=0;i<eg[k].length && cr<need;i++){
+      var c=eg[k][i];
+      if(S.elet.indexOf(c.code)<0){ S.elet.push(c.code); cr+=c.cr; }
+    }
+  });
+}
+function electiveCredits(k){
+  var eg=electiveGroups(), cr=0;
+  (eg[k]||[]).forEach(function(c){ if(S.elet.indexOf(c.code)>=0) cr+=c.cr; });
+  return cr;
+}
+
+function catalog(){
+  var map = new Map();
+  activeGroups().forEach(function(g){
+    (POOL[g]||[]).forEach(function(c){
+      if(c.elet && S.elet.indexOf(c.code)<0) return;
+      if(!map.has(c.code)) map.set(c.code,c);
+    });
+  });
+  Object.keys(S.custom).forEach(function(k){
+    var c=S.custom[k];
+    map.set(c.code,{code:c.code,name:c.name,cr:c.cr,sem:c.sem||1,req:[],any:null,conj:null,flex:true,elet:null,group:'custom'});
+  });
+  return map;
+}
+var CAT = catalog();
+function refreshCat(){ ensureElectives(); CAT = catalog(); }
+function course(code){
+  if(CAT.has(code)) return CAT.get(code);
+  var gs=Object.keys(POOL);
+  for(var i=0;i<gs.length;i++){
+    var f=POOL[gs[i]].filter(function(c){return c.code===code;})[0];
+    if(f) return f;
+  }
+  return null;
+}
+
+/* ============================================================
+   4. MOTOR DE REGRAS
+   ============================================================ */
+function statusOf(code,sem){ return S.status[code+'@'+sem] || null; }
+function setStatus(code,sem,v){ var k=code+'@'+sem; if(v) S.status[k]=v; else delete S.status[k]; }
+function inPlan(code,sem){ return (S.plan[sem]||[]).indexOf(code)>=0; }
+function semList(sem){ return S.plan[sem]||[]; }
+function allSems(){ var a=[]; for(var i=1;i<=S.nSem;i++) a.push(i); return a; }
+
+/** fixada = tem situação lançada (automático) OU foi fixada manualmente OU é uma disciplina fora da grade */
+function isFixed(code,sem){
+  if(statusOf(code,sem)) return true;
+  if(S.fixed && S.fixed[code+'@'+sem]) return true;
+  var c=course(code);
+  if(c && c.group==='custom') return true;
+  return false;
+}
+function toggleFix(code,sem){
+  if(statusOf(code,sem)){
+    toast('Essa disciplina já está fixada porque tem uma situação lançada. Limpe as situações para liberar.',true);
+    return;
+  }
+  var k=code+'@'+sem;
+  var was=!!S.fixed[k];
+  if(was) delete S.fixed[k]; else S.fixed[k]=true;
+  renderAll();
+  toast(was ? code+' desafixada.' : code+' fixada neste semestre — a organização automática não vai movê-la.');
+}
+/** primeiro semestre ainda pendente: onde a organização automática recomeça, e a partir de onde as DPs podem ser alocadas */
+function firstPendingSem(){
+  for(var i=1;i<=S.nSem;i++){
+    var list=semList(i);
+    if(!list.length) return i;
+    if(list.some(function(code){ return !statusOf(code,i); })) return i;
+  }
+  return S.nSem+1;
+}
+
+function calPeriod(i){ return ((S.inPer-1 + i-1) % 2) + 1; }
+function calYear(i){ return S.inYear + Math.floor((S.inPer-1 + i-1)/2); }
+function semLabel(i){ return calYear(i)+'.'+calPeriod(i); }
+function offerPeriod(c){ return ((c.sem-1)%2)+1; }
+function parityOK(c,i){ return c.flex || c.group==='custom' || offerPeriod(c)===calPeriod(i); }
+
+function passedBefore(code,sem){
+  for(var s=1;s<sem;s++){
+    if(inPlan(code,s)){
+      var st=statusOf(code,s);
+      if(st!=='reprovado' && st!=='trancado') return true;
+    }
+  }
+  return false;
+}
+function missing(code,sem){
+  var c=course(code); if(!c) return [];
+  var out=[];
+  (c.req||[]).forEach(function(r){ if(!passedBefore(r,sem)) out.push(r); });
+  if(c.any && c.any.length && !c.any.some(function(r){return passedBefore(r,sem);})) out.push(c.any.join(' ou '));
+  return out;
+}
+function isLocked(code,sem){ return missing(code,sem).length>0; }
+
+function courseState(code){
+  var at=[];
+  allSems().forEach(function(s){ if(inPlan(code,s)) at.push({sem:s,st:statusOf(code,s)}); });
+  var approved = at.some(function(a){return a.st==='aprovado';});
+  var open = at.filter(function(a){return !a.st;}).map(function(a){return a.sem;}).sort(function(x,y){return x-y;});
+  var failed = at.some(function(a){return a.st==='reprovado'||a.st==='trancado'||a.st==='requisito';});
+  return {at:at, approved:approved, open:open, openSem:open.length?open[0]:null, failed:failed};
+}
+
+function semCredits(i){
+  return semList(i).reduce(function(t,code){
+    var c=course(code); if(!c) return t;
+    return statusOf(code,i)==='trancado' ? t : t + c.cr;
+  },0);
+}
+
+function expectedUpTo(n){
+  var t=0;
+  CAT.forEach(function(c){ if(c.group!=='custom' && c.sem<=n) t+=c.cr; });
+  return t;
+}
+function totalGradCredits(){
+  var t=0; CAT.forEach(function(c){ if(c.group!=='custom') t+=c.cr; }); return t;
+}
+/** créditos aprovados — disciplinas fora da grade nunca entram nessa conta */
+function approvedCredits(uptoSem){
+  var t=0;
+  Object.keys(S.status).forEach(function(k){
+    if(S.status[k]!=='aprovado') return;
+    var p=k.split('@'), code=p[0], sem=+p[1];
+    if(uptoSem && sem>uptoSem) return;
+    var c=course(code); if(c && c.group!=='custom') t+=c.cr;
+  });
+  return t;
+}
+/** créditos aprovados de disciplinas cujo semestre IDEAL (não o semestre do plano onde foram
+    cursadas) é até n — assim uma DP do 8º só paga mais tarde, no 9º ou 10º, continua contando
+    para esse cálculo, em vez de precisar ser aprovada dentro do próprio semestre n */
+function approvedCreditsIdealUpTo(n){
+  var t=0, counted={};
+  CAT.forEach(function(c){
+    if(c.group==='custom' || c.group.indexOf('mod_')===0) return;
+    if(c.sem>n || counted[c.code]) return;
+    if(courseState(c.code).approved){ counted[c.code]=true; t+=c.cr; }
+  });
+  return t;
+}
+function lastFilledSem(){
+  var last=0;
+  Object.keys(S.status).forEach(function(k){ var s=+k.split('@')[1]; if(s>last) last=s; });
+  return last;
+}
+/** créditos de DP (reprovada, com requisito, trancada, ou travada) entre as disciplinas cujo
+    semestre ideal é até n — a métrica "ao vivo" usada pelo aviso do módulo */
+function dpCreditsIdealUpTo(n){
+  return dpInfo().filter(function(d){ return d.ideal<=n; }).reduce(function(t,d){ return t+d.c.cr; },0);
+}
+/** quando o módulo do 5º ano pode começar: precisa de 80% dos créditos (por semestre ideal,
+    não importa em qual semestre do plano foram concluídos) aprovados até o 8º semestre.
+    Se não bate na checagem do 8º, atrasa para o 11º; se não bater de novo até o 10º, atrasa
+    para o 13º; e assim por diante, sempre pulando de 2 em 2 semestres (um ano). */
+function moduleStart(){
+  var exp=expectedUpTo(8);
+  var got=approvedCreditsIdealUpTo(8);
+  var pct = exp? got/exp*100 : 100;
+  var reached=lastFilledSem();
+  if(reached<8) return {start:9, ok:true, pct:pct, early:true};
+  var start=9;
+  while(pct<80 && reached>=start-1){ start+=2; }
+  return {start:start, ok:pct>=80, pct:pct, early:false};
+}
+/** painel "ao vivo" de DPs até o 8º semestre, usado pelo menu clicável do bloco do módulo */
+function moduleDpStatus(){
+  var exp=expectedUpTo(8);
+  var dpCr=dpCreditsIdealUpTo(8);
+  var maxDp=exp*0.2;
+  var slack=maxDp-dpCr;
+  return {exp:exp, dpCr:dpCr, maxDp:maxDp, slack:slack, danger: slack<=10};
+}
+/* semestre ideal considerando o eventual adiamento do módulo */
+function idealSemOf(c){
+  if(c.group.indexOf('mod_')===0) return c.sem + (moduleStart().start - 9);
+  return c.sem;
+}
+
+/* ---------- organização automática ---------- */
+function autoOrganize(){
+  refreshCat();
+
+  /* 1) reúne tudo que está fixado no plano atual — situação lançada, fixação manual,
+        ou disciplina fora da grade — e preserva exatamente onde está */
+  var fixedBySem = {};   // sem -> [code,...]
+  var fixedCodes = {};   // code -> [{sem,status}, ...]
+  allSems().forEach(function(s){
+    semList(s).forEach(function(code){
+      if(isFixed(code,s)){
+        (fixedBySem[s]=fixedBySem[s]||[]).push(code);
+        (fixedCodes[code]=fixedCodes[code]||[]).push({sem:s, status:statusOf(code,s)});
+      }
+    });
+  });
+  var maxFixedSem=0;
+  Object.keys(fixedBySem).forEach(function(s){ if(+s>maxFixedSem) maxFixedSem=+s; });
+
+  var newPlan={}, newStatus={};
+  Object.keys(fixedBySem).forEach(function(s){
+    newPlan[s]=fixedBySem[s].slice();
+    fixedBySem[s].forEach(function(code){
+      var st=statusOf(code,+s); if(st) newStatus[code+'@'+s]=st;
+    });
+  });
+
+  /* 2) o que ainda precisa de uma vaga: tudo que não tem nenhuma ocorrência fixada
+        "satisfeita" — só aprovada, ou ainda pendente (melhor dos casos), dispensam nova
+        tentativa. Requisito, reprovada e trancada SEMPRE exigem uma nova ocorrência,
+        mesmo que o requisito já libere as disciplinas seguintes. */
+  var modShift = moduleStart().start - 9;
+  var need = [];
+  CAT.forEach(function(c){
+    if(c.group==='custom') return;   // já fixada acima
+    var occs = fixedCodes[c.code]||[];
+    var satisfied = occs.some(function(o){ return !o.status || o.status==='aprovado'; });
+    if(satisfied) return;
+    var sem = c.group.indexOf('mod_')===0 ? c.sem+modShift : c.sem;
+    need.push(Object.assign({},c,{sem:sem}));
+  });
+  var pool = new Set(need.map(function(c){return c.code;}));
+  var byCode = {}; need.forEach(function(c){ byCode[c.code]=c; });
+
+  var cap = Math.min(S.maxCr, 40);
+
+  function prio(code){
+    var c=byCode[code]; if(!c) return 999;
+    var arr = offerPeriod(c)===1 ? S.dpOrder.odd : S.dpOrder.even;
+    var ix = arr.indexOf(code);
+    return ix<0 ? 500 + c.sem : ix;
+  }
+  function placedOK(code,sem){
+    var c=byCode[code]; if(!c) return true;
+    function ok(r){
+      for(var s=1;s<sem;s++){
+        if((newPlan[s]||[]).indexOf(r)>=0){
+          var st=newStatus[r+'@'+s];
+          if(st!=='reprovado'&&st!=='trancado') return true;
+        }
+      }
+      return false;
+    }
+    if((c.req||[]).some(function(r){return !ok(r);})) return false;
+    if(c.any && c.any.length && !c.any.some(ok)) return false;
+    return true;
+  }
+
+  /* o loop varre semestres até esvaziar o que falta alocar — sem um teto artificial que
+     descartaria disciplinas em cascatas pesadas de reprovação. 60 é apenas uma margem de
+     segurança para nunca rodar para sempre; na prática o esvaziamento ocorre bem antes. */
+  var SAFETY_MAX = 60;
+  var nSem=maxFixedSem;
+  for(var i=1;i<=SAFETY_MAX;i++){
+    if(pool.size===0 && i>maxFixedSem) break;
+    if(i>nSem) nSem=i;
+    if(!newPlan[i]) newPlan[i]=[];
+    var cr=newPlan[i].reduce(function(t,code){
+      var c=course(code); if(!c) return t;
+      return newStatus[code+'@'+i]==='trancado' ? t : t+c.cr;
+    },0);
+    (function(i){
+      function add(code){
+        var c=byCode[code];
+        newPlan[i].push(code);   // sempre entra pendente (sem situação) — respeita o melhor dos casos
+        cr+=c.cr;
+        pool.delete(code);
+      }
+      var elig = Array.from(pool).filter(function(code){
+        if(newPlan[i].indexOf(code)>=0) return false;   // já fixada aqui mesmo — a repetição vai para depois
+        var c=byCode[code];
+        return parityOK(c,i) && placedOK(code,i);
+      });
+      var obrig = elig.filter(function(code){return byCode[code].sem===i;})
+                      .sort(function(a,b){ return byCode[b].cr-byCode[a].cr || a.localeCompare(b); });
+      var dps = elig.filter(function(code){return byCode[code].sem<i;})
+                    .sort(function(a,b){ return prio(a)-prio(b); });
+      var first = S.fillMode==='dp' ? dps : obrig;
+      var second= S.fillMode==='dp' ? obrig : dps;
+      [first,second].forEach(function(bucket){
+        bucket.forEach(function(code){
+          if(cr + byCode[code].cr <= cap) add(code);
+        });
+      });
+    })(i);
+  }
+  /* garantia final: se mesmo assim sobrou algo (limite de créditos baixo demais para caber
+     em 60 semestres), força a entrada no último semestre em vez de esconder a disciplina do usuário */
+  if(pool.size>0){
+    nSem++;
+    newPlan[nSem]=newPlan[nSem]||[];
+    Array.from(pool).sort(function(a,b){ return prio(a)-prio(b); }).forEach(function(code){
+      newPlan[nSem].push(code); pool.delete(code);
+    });
+    toast('O limite de créditos era baixo demais para encaixar tudo dentro de 60 semestres — as disciplinas restantes foram colocadas no '+nSem+'º semestre mesmo passando do teto.',true);
+  }
+  S.nSem = Math.max(10, nSem);
+  for(var j=1;j<=S.nSem;j++){ if(!newPlan[j]) newPlan[j]=[]; }
+  S.plan=newPlan; S.status=newStatus;
+  syncDpOrder();
+}
+
+/* ---------- DPs: tudo que saiu do semestre ideal ---------- */
+function dpInfo(){
+  var items=[];
+  CAT.forEach(function(c){
+    if(c.group==='custom') return;
+    var cs=courseState(c.code);
+    if(cs.approved) return;
+    var ideal=idealSemOf(c);
+    var tipo=null;
+    if(cs.failed) tipo='direta';
+    else if(cs.openSem===null) tipo='travada';
+    else if(cs.openSem>ideal) tipo='cascata';
+    if(tipo) items.push({code:c.code, c:c, tipo:tipo, ideal:ideal,
+                         openSem:cs.openSem, atraso: cs.openSem? cs.openSem-ideal : null});
+  });
+  return items;
+}
+function dpMap(){
+  var m={}; dpInfo().forEach(function(d){ m[d.code]=d; }); return m;
+}
+function syncDpOrder(){
+  var items=dpInfo();
+  var odd=[], even=[];
+  items.forEach(function(d){ (offerPeriod(d.c)===1?odd:even).push(d.code); });
+  function keep(arr,cur){
+    var r = cur.filter(function(x){return arr.indexOf(x)>=0;});
+    arr.forEach(function(x){ if(r.indexOf(x)<0) r.push(x); });
+    return r;
+  }
+  S.dpOrder.odd  = keep(odd , S.dpOrder.odd );
+  S.dpOrder.even = keep(even, S.dpOrder.even);
+}
+
+/* ---------- módulo que repete disciplinas da ênfase ---------- */
+function moduleConflicts(){
+  var emph={}; (POOL[S.emph]||[]).forEach(function(c){ emph[c.code]=c; });
+  return (POOL[modGroup()]||[]).filter(function(c){ return emph[c.code]; })
+                               .map(function(c){ return c.code; });
+}
+
+/* ---------- duplicatas pendentes ---------- */
+function duplicates(){
+  var out=[];
+  CAT.forEach(function(c){
+    var cs=courseState(c.code);
+    if(cs.open.length>1) out.push({code:c.code, sems:cs.open});
+  });
+  return out;
+}
+
+/* ============================================================
+   5. RENDERIZAÇÃO
+   ============================================================ */
+function $(s){ return document.querySelector(s); }
+function el(t,cls,txt){ var e=document.createElement(t); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
+var toastT;
+function toast(msg,err){
+  var t=$('#toast'); t.textContent=msg; t.className = err?'on err':'on';
+  clearTimeout(toastT); toastT=setTimeout(function(){t.className='';},2800);
+}
+
+function renderAll(){
+  refreshCat(); syncDpOrder();
+  renderMetrics(); renderConsulta(); renderPlan(); renderDps(); renderEmph(); renderScn();
+}
+
+function renderMetrics(){
+  var box=$('#metrics'); box.innerHTML='';
+  var cur=lastFilledSem();
+  var appr=approvedCredits(), appr8=approvedCredits(8);
+  var total=totalGradCredits(), expCur=expectedUpTo(cur||1), exp8=expectedUpTo(8);
+  var ms=moduleStart();
+  var dpStat=moduleDpStatus();
+  var lastSem=1; for(var i=1;i<=S.nSem;i++){ if(semList(i).length) lastSem=i; }
+
+  function add(k,v,sub,pct,alert,onClick){
+    var m=el('div','metric'+(alert?' alert':'')+(onClick?' clickable':''));
+    m.appendChild(el('div','k',k));
+    m.appendChild(el('div','v',v));
+    if(sub) m.appendChild(el('div','sub',sub));
+    if(pct!=null){ var b=el('div','bar'), ii=el('i'); ii.style.width=Math.min(100,pct)+'%'; b.appendChild(ii); m.appendChild(b); }
+    if(onClick){ m.tabIndex=0; m.setAttribute('role','button'); m.addEventListener('click',onClick); m.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onClick(); } }); }
+    box.appendChild(m);
+  }
+  add('Créditos aprovados', appr, 'de '+total+' na grade · mín. '+MIN_GRAD_CR+' com optativas livres', total?appr/total*100:0);
+  add(cur?('Até o '+cur+'º semestre'):'Até o semestre atual',
+      (expCur?Math.round(appr/expCur*100):0)+'%',
+      cur? appr+' de '+expCur+' previstos' : 'lance uma situação para começar',
+      expCur?appr/expCur*100:0);
+  add('Até o 8º semestre', (exp8?Math.round(appr8/exp8*100):0)+'%',
+      appr8+' de '+exp8+' previstos', exp8?appr8/exp8*100:0);
+  add('Formatura prevista', semLabel(lastSem), lastSem+'º semestre · ingresso em '+S.inYear+'.'+S.inPer, null);
+  add('Módulo do 5º ano', ms.start+'º sem',
+      (ms.early ? 'avaliado quando chegar ao 8º semestre' : (ms.ok ? 'liberado: 80% ou mais até o 8º' : 'adiado: menos de 80% até o 8º'))+' · clique para o detalhe',
+      null, dpStat.danger, openModuleCheck);
+}
+
+/* ---------- consulta ---------- */
+function renderConsulta(){
+  var g=$('#consultaGrid'); g.innerHTML='';
+  $('#modHint').textContent = MOD_LABEL[S.mod]+' — '+MOD_NOTE[S.mod];
+  var groups=[
+    {t:'Ciclo básico', src:'basico', sems:[1,2,3,4,5,6]},
+    {t:EMPH_LABEL[S.emph], src:S.emph, sems:[7,8,9,10]},
+    {t:'Módulo: '+MOD_LABEL[S.mod], src:modGroup(), sems:[9,10]}
+  ];
+  groups.forEach(function(grp){
+    grp.sems.forEach(function(sem){
+      var list=(POOL[grp.src]||[]).filter(function(c){return c.sem===sem;});
+      if(!list.length) return;
+      var card=el('div','card');
+      var hd=el('div','card-hd');
+      hd.appendChild(el('b',null,sem+'º semestre'));
+      hd.appendChild(el('span',null,grp.t));
+      card.appendChild(hd);
+      var tb=el('table','t'), sum=0, eletNeed=0, eletSel=0, hasElet=false;
+      list.forEach(function(c){
+        if(c.elet){ hasElet=true; eletNeed=ELECTIVE_RULES[c.elet]||12; if(S.elet.indexOf(c.code)>=0) eletSel+=c.cr; }
+        else sum+=c.cr;
+        var tr=el('tr');
+        tr.appendChild(el('td','cd',c.code));
+        var nm=el('td','nm');
+        nm.appendChild(document.createTextNode(c.name));
+        var bits=[];
+        if(c.req&&c.req.length) bits.push('requisito: '+c.req.join(', '));
+        if(c.any) bits.push('requisito: '+c.any.join(' ou '));
+        if(c.conj) bits.push('conjunto com '+c.conj.join(', '));
+        if(c.flex) bits.push('oferecida todo semestre');
+        if(c.elet) bits.push(S.elet.indexOf(c.code)>=0?'eletiva escolhida':'eletiva não escolhida');
+        if(bits.length) nm.appendChild(el('div','req-note',bits.join(' · ')));
+        tr.appendChild(nm);
+        tr.appendChild(el('td','cc',String(c.cr)));
+        tb.appendChild(tr);
+      });
+      card.appendChild(tb);
+      var ft=el('div','card-hd');
+      ft.style.borderBottom='0'; ft.style.borderTop='1px solid var(--line-soft)';
+      ft.appendChild(el('b',null,'Subtotal'));
+      ft.appendChild(el('span',null, hasElet
+        ? (sum? sum+' cr fixos · ':'')+'eletivas: '+eletSel+'/'+eletNeed+' cr'
+        : sum+' créditos-aula'));
+      card.appendChild(ft);
+      g.appendChild(card);
+    });
+  });
+}
+
+/* ---------- planejador ---------- */
+function chip(code,sem,opts){
+  opts=opts||{};
+  var c=course(code); if(!c) return el('div');
+  var st=statusOf(code,sem);
+  var locked=isLocked(code,sem);
+  var cs=courseState(code);
+  var dup = cs.open.length>1 && !st;
+  var d=el('div','c'+(st?' s-'+st:'')+(locked&&!st?' locked':'')+(dup?' dup':''));
+  if(!opts.readonly){ d.draggable=true; d.dataset.code=code; d.dataset.sem=sem; }
+
+  var main=el('div','c-main');
+  main.appendChild(el('div','c-code',c.code));
+  main.appendChild(el('div','c-name',c.name));
+  var meta=el('div','c-meta');
+  meta.appendChild(el('span','cr',c.cr+' cr'));
+  var ideal=c.group==='custom'?sem:idealSemOf(c);
+  if(ideal<sem && c.group!=='custom') meta.appendChild(el('span','tag dp','DP do '+c.sem+'º'));
+  if(c.group==='custom') meta.appendChild(el('span','tag extra','fora da grade'));
+  if(c.elet) meta.appendChild(el('span','tag elet','eletiva'));
+  if(c.flex && c.group!=='custom') meta.appendChild(el('span','tag flex','todo sem.'));
+  if(!parityOK(c,sem) && c.group!=='custom') meta.appendChild(el('span','tag lock','fora do período'));
+  if(dup) meta.appendChild(el('span','tag warn','repetida no '+cs.open.filter(function(x){return x!==sem;}).join(', ')+'º'));
+  var fixed=isFixed(code,sem);
+  if(fixed && !opts.readonly) meta.appendChild(el('span','tag pin','📌 fixada'));
+  main.appendChild(meta);
+  if(locked) main.appendChild(el('div','why','Travada: falta '+missing(code,sem).join(', ')));
+  d.appendChild(main);
+
+  if(!opts.readonly){
+    main.title='Dois cliques rápidos para '+(fixed?'desafixar':'fixar')+' esta disciplina neste semestre.';
+    main.addEventListener('dblclick',function(e){ e.preventDefault(); toggleFix(code,sem); });
+    var side=el('div','c-side');
+    var sel=el('select');
+    sel.appendChild(new Option('Pendente',''));
+    STATUSES.forEach(function(s){ sel.appendChild(new Option(ST_LABEL[s],s)); });
+    sel.value=st||'';
+    sel.addEventListener('change',function(){
+      var before=semCredits(sem);
+      setStatus(code,sem,sel.value);
+      var after=semCredits(sem);
+      if(before>=12 && after<12){
+        setStatus(code,sem,st);
+        toast('Trancar deixaria o '+sem+'º semestre com '+after+' créditos. O mínimo é 12.',true);
+        renderAll(); return;
+      }
+      renderAll();
+    });
+    side.appendChild(sel);
+    var x=el('button','x','×'); x.title='Remover do semestre';
+    x.addEventListener('click',function(){ removeFrom(code,sem); });
+    side.appendChild(x);
+    d.appendChild(side);
+  }
+  return d;
+}
+
+function removeFrom(code,sem){
+  var c=course(code);
+  var cur=semCredits(sem);
+  var after=cur - (statusOf(code,sem)==='trancado'?0:c.cr);
+  if(cur>=12 && after<12){
+    toast('Remover deixaria o '+sem+'º semestre com '+after+' créditos. O mínimo é 12.',true); return;
+  }
+  S.plan[sem]=semList(sem).filter(function(x){return x!==code;});
+  setStatus(code,sem,null);
+  delete S.fixed[code+'@'+sem];
+  if(S.custom[code] && !allSems().some(function(s){return inPlan(code,s);})) delete S.custom[code];
+  renderAll();
+}
+
+function moveCourse(code,from,to){
+  if(from===to) return;
+  var c=course(code);
+  var cr = statusOf(code,from)==='trancado' ? 0 : c.cr;
+  if(semList(to).indexOf(code)>=0){ toast('Essa disciplina já está no '+to+'º semestre.',true); return; }
+  if(semCredits(to)+cr > 40){ toast('O '+to+'º semestre passaria de 40 créditos. Movimento bloqueado.',true); return; }
+  var srcAfter=semCredits(from)-cr;
+  if(semCredits(from)>=12 && srcAfter<12){ toast('O '+from+'º semestre ficaria com '+srcAfter+' créditos. O mínimo é 12.',true); return; }
+  var st=statusOf(code,from);
+  var wasFixed=!!S.fixed[code+'@'+from];
+  S.plan[from]=semList(from).filter(function(x){return x!==code;});
+  setStatus(code,from,null);
+  delete S.fixed[code+'@'+from];
+  S.plan[to]=semList(to).concat([code]);
+  if(st) setStatus(code,to,st);
+  if(wasFixed) S.fixed[code+'@'+to]=true;
+  if(S.custom[code]) S.custom[code].sem=to;
+  renderAll();
+}
+
+function renderPlan(){
+  var rail=$('#rail'); rail.innerHTML='';
+  var ms=moduleStart();
+  $('#planHint').textContent = (ms.ok
+    ? 'Arraste as disciplinas entre os semestres. No modo livre o limite é de 12 a 40 créditos.'
+    : 'Menos de 80% dos créditos até o 8º: o módulo do 5º ano foi empurrado para o '+ms.start+'º semestre.')
+    + ' Dois cliques numa disciplina fixam ou soltam sua posição.';
+
+  var dw=$('#dupWarn'); dw.innerHTML='';
+  var conf=moduleConflicts();
+  if(conf.length){
+    dw.appendChild(el('div','warnbar','O módulo "'+MOD_LABEL[S.mod]+'" repete '+conf.length+' disciplina(s) da ênfase '+EMPH_LABEL[S.emph]+' ('+conf.slice(0,4).join(', ')+(conf.length>4?'…':'')+'). Elas contam uma vez só: escolha outro módulo ou outras eletivas.'));
+  }
+  var dups=duplicates();
+  if(dups.length){
+    var msg=dups.map(function(d){ return d.code+' ('+d.sems.join('º, ')+'º)'; }).join(' · ');
+    dw.appendChild(el('div','warnbar','Disciplinas pendentes duplicadas: '+msg+'. Remova uma das cópias — só faz sentido repetir uma disciplina quando a anterior foi reprovada ou trancada.'));
+  }
+
+  for(var i=1;i<=S.nSem;i++){
+    (function(i){
+      var col=el('div','sem'); col.dataset.sem=i;
+      var hd=el('div','sem-hd');
+      var row=el('div','row');
+      row.appendChild(el('div','sem-n',i+'º semestre'));
+      row.appendChild(el('div','sem-when',semLabel(i)+' · '+(calPeriod(i)===1?'ímpar':'par')));
+      hd.appendChild(row);
+      var cr=semCredits(i);
+      var over = cr>S.maxCr, bad = cr>40 || (cr>0&&cr<12);
+      var crRow=el('div','sem-cr'+(bad?' bad':over?' over':''));
+      var meter=el('div','meter'+(bad?' bad':over?' over':''));
+      var fill=el('i'); fill.style.width=Math.min(100,cr/40*100)+'%'; meter.appendChild(fill);
+      crRow.appendChild(meter); crRow.appendChild(el('b',null,cr+'/'+S.maxCr+' cr'));
+      hd.appendChild(crRow);
+      col.appendChild(hd);
+
+      var list=semList(i);
+      var obrig=list.filter(function(code){var c=course(code); return c && c.group!=='custom' && idealSemOf(c)===i;});
+      var dps  =list.filter(function(code){var c=course(code); return c && c.group!=='custom' && idealSemOf(c)<i;});
+      var outros=list.filter(function(code){var c=course(code); return c && (c.group==='custom' || idealSemOf(c)>i);});
+
+      function section(title,arr){
+        if(!arr.length) return;
+        col.appendChild(el('div','grp',title));
+        var l=el('div','list');
+        arr.forEach(function(code){ l.appendChild(chip(code,i)); });
+        col.appendChild(l);
+      }
+      section('Obrigatórias do semestre', obrig);
+      section('DPs e pendências', dps);
+      section('Adicionadas manualmente', outros);
+      if(!list.length){
+        var l=el('div','list'); l.appendChild(el('div','empty','Semestre vazio. Solte uma disciplina aqui.')); col.appendChild(l);
+      }
+
+      var ft=el('div','sem-ft');
+      var b1=el('button','btn sm','+ Da grade');
+      b1.addEventListener('click',function(){ openPicker(i); });
+      var b2=el('button','btn sm','+ Outra disciplina');
+      b2.addEventListener('click',function(){ openCustom(i); });
+      ft.appendChild(b1); ft.appendChild(b2);
+      col.appendChild(ft);
+
+      col.addEventListener('dragover',function(e){ e.preventDefault(); col.classList.add('drop'); });
+      col.addEventListener('dragleave',function(){ col.classList.remove('drop'); });
+      col.addEventListener('drop',function(e){
+        e.preventDefault(); col.classList.remove('drop');
+        var d=e.dataTransfer.getData('text/plain'); if(!d || d.indexOf('dp:')===0) return;
+        var p=d.split('@');
+        moveCourse(p[0],+p[1],i);
+      });
+      rail.appendChild(col);
+    })(i);
+  }
+  Array.prototype.forEach.call(rail.querySelectorAll('.c[draggable=true]'),function(c){
+    c.addEventListener('dragstart',function(e){
+      e.dataTransfer.setData('text/plain', c.dataset.code+'@'+c.dataset.sem);
+      e.dataTransfer.effectAllowed='move';
+      c.classList.add('dragging');
+    });
+    c.addEventListener('dragend',function(){ c.classList.remove('dragging'); });
+  });
+}
+
+/* ---------- central de DPs ---------- */
+var TIPO_LABEL = {
+  direta:'reprovada, requisito ou trancada',
+  cascata:'atrasada por cascata',
+  travada:'sem vaga no plano'
+};
+function renderDps(){
+  var area=$('#dpArea'); area.innerHTML='';
+  var info=dpMap();
+  var cols=[['odd','DPs de semestre ímpar','oferecidas no 1º, 3º, 5º…'],['even','DPs de semestre par','oferecidas no 2º, 4º, 6º…']];
+  var grand=0, nDir=0, nCas=0;
+  cols.forEach(function(pair){
+    var key=pair[0], title=pair[1], sub=pair[2];
+    var arr=S.dpOrder[key];
+    var sum=arr.reduce(function(t,c){ var x=course(c); return t+(x?x.cr:0); },0);
+    grand+=sum;
+    var card=el('div','card');
+    var hd=el('div','card-hd');
+    hd.appendChild(el('b',null,title));
+    hd.appendChild(el('span',null,arr.length+' disc. · '+sum+' cr'));
+    card.appendChild(hd);
+    card.appendChild(el('div','grp',sub+' — o topo da lista é paga primeiro'));
+    var l=el('div','dp-list'); l.dataset.key=key;
+    if(!arr.length) l.appendChild(el('div','empty','Nenhuma pendência aqui. Bom sinal.'));
+    arr.forEach(function(code,ix){
+      var c=course(code); if(!c) return;
+      var d0=info[code]; if(!d0) return;
+      if(d0.tipo==='direta') nDir++; else nCas++;
+      var d=el('div','dp t-'+d0.tipo);
+      d.draggable=true; d.dataset.code=code; d.dataset.key=key;
+      d.appendChild(el('div','rank'+(ix===0?' top':''),String(ix+1)));
+      var m=el('div','c-main');
+      m.appendChild(el('div','c-code',c.code+' · ideal no '+c.sem+'º'));
+      m.appendChild(el('div','c-name',c.name));
+      var meta=el('div','c-meta');
+      var tg=el('span','tag '+(d0.tipo==='direta'?'dp':d0.tipo==='cascata'?'lock':'warn'), TIPO_LABEL[d0.tipo]);
+      meta.appendChild(tg);
+      if(d0.openSem) meta.appendChild(el('span','tag flex','no plano: '+d0.openSem+'º'+(d0.atraso>0?' (+'+d0.atraso+')':'')));
+      m.appendChild(meta);
+      d.appendChild(m);
+      d.appendChild(el('span','cr',c.cr+' cr'));
+      var ar=el('div','arrows');
+      var up=el('button',null,'▲'), dn=el('button',null,'▼');
+      up.addEventListener('click',function(){ if(ix>0){ arr.splice(ix-1,0,arr.splice(ix,1)[0]); renderDps(); } });
+      dn.addEventListener('click',function(){ if(ix<arr.length-1){ arr.splice(ix+1,0,arr.splice(ix,1)[0]); renderDps(); } });
+      ar.appendChild(up); ar.appendChild(dn); d.appendChild(ar);
+      var allocBtn=el('button','btn sm','Alocar…');
+      allocBtn.title='Colocar esta disciplina em um semestre específico';
+      allocBtn.addEventListener('click',function(e){ e.stopPropagation(); openAllocate(code); });
+      d.appendChild(allocBtn);
+      l.appendChild(d);
+    });
+    card.appendChild(l);
+    area.appendChild(card);
+
+    l.addEventListener('dragover',function(e){ e.preventDefault(); });
+    l.addEventListener('drop',function(e){
+      e.preventDefault();
+      var data=e.dataTransfer.getData('text/plain'); if(data.indexOf('dp:')!==0) return;
+      var p=data.split(':'); if(p[2]!==key) return;
+      var from=arr.indexOf(p[1]); if(from<0) return;
+      var target=e.target.closest('.dp');
+      var to = target ? arr.indexOf(target.dataset.code) : arr.length-1;
+      if(to<0) to=arr.length-1;
+      arr.splice(to,0,arr.splice(from,1)[0]);
+      renderDps();
+    });
+  });
+  Array.prototype.forEach.call(area.querySelectorAll('.dp'),function(d){
+    d.addEventListener('dragstart',function(e){ e.dataTransfer.setData('text/plain','dp:'+d.dataset.code+':'+d.dataset.key); d.classList.add('dragging'); });
+    d.addEventListener('dragend',function(){ d.classList.remove('dragging'); });
+  });
+  $('#dpTotals').textContent = grand
+    ? 'Total fora do semestre ideal: '+grand+' créditos em '+(S.dpOrder.odd.length+S.dpOrder.even.length)+' disciplinas — '+nDir+' por nota e '+nCas+' arrastadas junto.'
+    : 'Nenhuma disciplina fora do semestre ideal.';
+}
+
+/* ---------- ênfases ---------- */
+function renderEmph(){
+  var g=$('#emphGrid'); g.innerHTML='';
+  Object.keys(EMPH_LABEL).forEach(function(key){
+    var list=POOL[key].filter(function(c){return (c.sem===7||c.sem===8) && !c.elet;});
+    var free=0, freeCr=0, rows=[];
+    list.forEach(function(c){
+      var miss=(c.req||[]).filter(function(r){return !passedBefore(r,c.sem);});
+      var anyMiss = c.any && c.any.length && !c.any.some(function(r){return passedBefore(r,c.sem);});
+      var ok = !miss.length && !anyMiss;
+      if(ok){ free++; freeCr+=c.cr; }
+      rows.push({c:c, ok:ok, miss:miss.concat(anyMiss?[c.any.join(' ou ')]:[])});
+    });
+    var dpOdd=S.dpOrder.odd.reduce(function(t,x){var y=course(x);return t+(y?y.cr:0);},0);
+    var dpEven=S.dpOrder.even.reduce(function(t,x){var y=course(x);return t+(y?y.cr:0);},0);
+
+    var card=el('div','card');
+    var hd=el('div','card-hd');
+    hd.appendChild(el('b',null,EMPH_LABEL[key]));
+    hd.appendChild(el('span',null, key===S.emph?'ênfase atual':''));
+    card.appendChild(hd);
+    var st=el('div','stat');
+    st.innerHTML =
+      '<div><b>'+free+'/'+rows.length+'</b>disciplinas liberadas</div>'+
+      '<div><b>'+freeCr+'</b>créditos disponíveis</div>'+
+      '<div><b>'+(dpOdd+dpEven)+'</b>créditos de DP junto</div>';
+    card.appendChild(st);
+    var mini=el('div','mini');
+    rows.forEach(function(r){
+      var d=el('div','c'+(r.ok?'':' locked'));
+      var m=el('div','c-main');
+      m.appendChild(el('div','c-code',r.c.code+' · '+r.c.sem+'º'));
+      m.appendChild(el('div','c-name',r.c.name));
+      if(!r.ok) m.appendChild(el('div','why','Falta '+r.miss.join(', ')));
+      d.appendChild(m);
+      d.appendChild(el('span','cr',r.c.cr+' cr'));
+      mini.appendChild(d);
+    });
+    card.appendChild(mini);
+    if(key!==S.emph){
+      var ft=el('div','sem-ft');
+      var b=el('button','btn sm','Adotar esta ênfase');
+      b.addEventListener('click',function(){
+        S.emph=key; $('#emph').value=key; autoOrganize(); renderAll();
+        toast('Ênfase alterada para '+EMPH_LABEL[key]+'.');
+      });
+      ft.appendChild(b); card.appendChild(ft);
+    }
+    g.appendChild(card);
+  });
+}
+
+/* ---------- cenários ---------- */
+function renderScn(){
+  var box=$('#scnList'); box.innerHTML='';
+  if(!scenarios.length){ box.appendChild(el('div','empty','Nenhum cenário salvo ainda.')); return; }
+  scenarios.forEach(function(sc,ix){
+    var r=el('div','scn');
+    r.appendChild(el('div','nm',sc.name));
+    r.appendChild(el('div','dt',sc.date));
+    var load=el('button','btn sm','Carregar');
+    load.addEventListener('click',function(){
+      S=Object.assign(freshState(),JSON.parse(JSON.stringify(sc.data)));
+      applyTheme(); syncControls(); renderAll(); toast('Cenário "'+sc.name+'" carregado.');
+    });
+    var dup=el('button','btn sm','Duplicar');
+    dup.addEventListener('click',function(){
+      scenarios.push({name:sc.name+' (cópia)',date:new Date().toLocaleString('pt-BR'),data:JSON.parse(JSON.stringify(sc.data))});
+      persistScn(); renderScn();
+    });
+    var del=el('button','btn sm','Excluir');
+    del.addEventListener('click',function(){ scenarios.splice(ix,1); persistScn(); renderScn(); toast('Cenário excluído.'); });
+    r.appendChild(load); r.appendChild(dup); r.appendChild(del);
+    box.appendChild(r);
+  });
+}
+function persistScn(){ store.set('poli.scn', JSON.stringify(scenarios)); }
+function persistState(){ store.set('poli.state', JSON.stringify(S)); }
+
+/* ============================================================
+   6. MODAIS
+   ============================================================ */
+function closeModal(){ $('#veil').classList.remove('on'); }
+$('#veil').addEventListener('click',function(e){ if(e.target.id==='veil') closeModal(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); });
+
+/* --- verificação ao vivo do módulo do 5º ano --- */
+function openModuleCheck(){
+  var ms=moduleStart();
+  var d=moduleDpStatus();
+  var m=$('#modal'); m.innerHTML='';
+  var hd=el('div','modal-hd'); hd.appendChild(el('b',null,'Situação do módulo do 5º ano'));
+  var cl=el('button','btn sm','Fechar'); cl.addEventListener('click',closeModal); hd.appendChild(cl);
+  m.appendChild(hd);
+  var bd=el('div','modal-bd');
+  bd.appendChild(el('p','hint','O módulo exige pelo menos 80% dos créditos aprovados até o 8º semestre — o que equivale a tolerar até '+Math.floor(d.maxDp)+' créditos em DP de um total de '+d.exp+' créditos esperados. O valor é sempre o mais atual: conforme as DPs são pagas, a folga aumenta.'));
+  var stat=el('div','stat');
+  stat.appendChild((function(){ var x=el('div'); x.innerHTML='<b>'+d.dpCr+'</b>créditos em DP até o 8º'; return x; })());
+  stat.appendChild((function(){ var x=el('div'); x.innerHTML='<b>'+Math.floor(d.maxDp)+'</b>máximo tolerado (20%)'; return x; })());
+  stat.appendChild((function(){ var x=el('div'); x.innerHTML='<b>'+Math.max(0,Math.round(d.slack))+'</b>créditos de folga restante'; return x; })());
+  bd.appendChild(stat);
+
+  if(d.slack<=10){
+    bd.appendChild(el('div','warnbar', d.slack<0
+      ? 'Você já passou do limite de DPs para o 8º semestre. Pelas regras do curso, o módulo não começa no 9º — a estimativa atual é '+ms.start+'º semestre.'
+      : 'Atenção: só restam '+Math.round(d.slack)+' créditos de folga. Reprovar mais uma disciplina de peso pode empurrar o módulo para o '+(ms.ok? (ms.start+2) : ms.start)+'º semestre.'));
+  } else if(!ms.ok){
+    bd.appendChild(el('div','warnbar','Com o cenário atual, o módulo começaria no '+ms.start+'º semestre em vez do 9º.'));
+  }
+
+  var list=dpInfo().filter(function(x){return x.ideal<=8;}).sort(function(a,b){return a.ideal-b.ideal;});
+  bd.appendChild(el('div','grp', list.length ? 'Disciplinas contando como DP até o 8º semestre' : ''));
+  if(list.length){
+    var mini=el('div','mini');
+    list.forEach(function(x){
+      var row=el('div','c');
+      var mm=el('div','c-main');
+      mm.appendChild(el('div','c-code',x.c.code+' · ideal '+x.ideal+'º'));
+      mm.appendChild(el('div','c-name',x.c.name));
+      row.appendChild(mm);
+      row.appendChild(el('span','cr',x.c.cr+' cr'));
+      mini.appendChild(row);
+    });
+    bd.appendChild(mini);
+  } else {
+    bd.appendChild(el('div','empty','Nenhuma DP até o 8º semestre até agora — folga máxima.'));
+  }
+  m.appendChild(bd);
+  $('#veil').classList.add('on');
+}
+
+/* --- alocar uma DP em um semestre específico --- */
+function allocateDp(code,sem){
+  var c=course(code); if(!c) return;
+  if(semList(sem).indexOf(code)>=0){ toast('Já está alocada nesse semestre.',true); return; }
+  if(semCredits(sem)+c.cr>40){ toast('Passaria de 40 créditos nesse semestre.',true); return; }
+  var otherFixedPending = allSems().some(function(s){
+    return +s!==sem && inPlan(code,s) && !statusOf(code,s) && S.fixed[code+'@'+s];
+  });
+  if(otherFixedPending){
+    toast(code+' já está fixada manualmente em outro semestre. Desafixe-a primeiro (dois cliques) para poder movê-la.',true);
+    return;
+  }
+  // tira qualquer ocorrência pendente (sem situação) da mesma disciplina de outro semestre —
+  // as ocorrências já fixadas (com situação lançada) nunca são tocadas
+  allSems().forEach(function(s){
+    if(+s!==sem && inPlan(code,s) && !statusOf(code,s)){
+      S.plan[s]=semList(s).filter(function(x){return x!==code;});
+    }
+  });
+  if(sem>S.nSem) S.nSem=sem;
+  S.plan[sem]=semList(sem).concat([code]);
+  closeModal(); renderAll(); toast(code+' alocada no '+sem+'º semestre.');
+}
+function openAllocate(code){
+  var c=course(code); if(!c) return;
+  var m=$('#modal'); m.innerHTML='';
+  var hd=el('div','modal-hd'); hd.appendChild(el('b',null,'Alocar '+c.code+' em qual semestre?'));
+  var cl=el('button','btn sm','Fechar'); cl.addEventListener('click',closeModal); hd.appendChild(cl);
+  m.appendChild(hd);
+  var bd=el('div','modal-bd');
+  var periodoTxt = (c.flex||c.group==='custom') ? 'ímpar e par' : (offerPeriod(c)===1?'ímpar':'par');
+  bd.appendChild(el('p','hint', c.name+' · '+c.cr+' créditos · oferecida em semestre '+periodoTxt+'.'));
+  var cur=firstPendingSem();
+  var upper=Math.max(S.nSem,cur)+6;
+  var opts=[];
+  for(var i=cur;i<=Math.min(upper,15);i++){ if(parityOK(c,i)) opts.push(i); }
+  var pick=el('div','pick');
+  if(!opts.length) pick.appendChild(el('div','empty','Nenhum semestre disponível dentro do limite do curso.'));
+  opts.forEach(function(i){
+    var cr=semCredits(i);
+    var over = cr+c.cr>40;
+    var b=el('button', over?'blocked':'');
+    b.appendChild(el('span','cd',i+'º'));
+    b.appendChild(el('span','nm',semLabel(i)+' · '+(calPeriod(i)===1?'ímpar':'par')+(i===cur?' · semestre atual':'')));
+    b.appendChild(el('span','tag '+(over?'warn':'flex'), cr+' cr já presentes'));
+    b.addEventListener('click',function(){
+      if(over){ toast('Esse semestre passaria de 40 créditos.',true); return; }
+      allocateDp(code,i);
+    });
+    pick.appendChild(b);
+  });
+  bd.appendChild(pick);
+  m.appendChild(bd);
+  $('#veil').classList.add('on');
+}
+
+/* --- adicionar disciplina da grade --- */
+function openPicker(sem){
+  var m=$('#modal'); m.innerHTML='';
+  var hd=el('div','modal-hd'); hd.appendChild(el('b',null,'Adicionar ao '+sem+'º semestre'));
+  var cl=el('button','btn sm','Fechar'); cl.addEventListener('click',closeModal); hd.appendChild(cl);
+  m.appendChild(hd);
+  var bd=el('div','modal-bd');
+  bd.appendChild(el('p','hint','Qualquer disciplina da grade, ignorando requisito e período de oferecimento. As que ainda não estão no planejador vêm primeiro; o teto de 40 créditos continua valendo.'));
+  var f=el('div','field');
+  var inp=el('input'); inp.type='search'; inp.placeholder='Buscar por código ou nome';
+  f.appendChild(inp); bd.appendChild(f);
+  var pick=el('div','pick'); bd.appendChild(pick);
+  m.appendChild(bd);
+
+  var all=[];
+  Object.keys(POOL).forEach(function(g){
+    if(g.indexOf('mod_')===0 && g!==modGroup()) return;
+    POOL[g].forEach(function(c){ if(!all.some(function(x){return x.code===c.code;})) all.push(c); });
+  });
+
+  function placements(code){
+    var out=[];
+    allSems().forEach(function(s){ if(inPlan(code,s)) out.push({sem:s, st:statusOf(code,s)}); });
+    return out;
+  }
+
+  function draw(){
+    var q=inp.value.trim().toLowerCase();
+    pick.innerHTML='';
+    var filtered=all.filter(function(c){
+      return !q || c.code.toLowerCase().indexOf(q)>=0 || c.name.toLowerCase().indexOf(q)>=0;
+    });
+    var fora=[], dentro=[];
+    filtered.forEach(function(c){ (placements(c.code).length?dentro:fora).push(c); });
+    var bySem=function(a,b){ return a.sem-b.sem || a.code.localeCompare(b.code); };
+    fora.sort(bySem); dentro.sort(bySem);
+
+    function row(c){
+      var pl=placements(c.code);
+      var openPl=pl.filter(function(p){return !p.st;});
+      var blocked=openPl.length>0;
+      var b=el('button', blocked?'blocked':(pl.length?'used':''));
+      b.appendChild(el('span','cd',c.code));
+      b.appendChild(el('span','nm',c.name));
+      b.appendChild(el('span','cr',c.cr+' cr'));
+      b.appendChild(el('span','tag extra',c.sem+'º'));
+      if(pl.length){
+        var txt = pl.map(function(p){ return p.sem+'º'+(p.st?' ('+p.st+')':''); }).join(', ');
+        b.appendChild(el('span','tag '+(blocked?'warn':'flex'), (blocked?'pendente no ':'no plano: ')+txt));
+      }
+      b.addEventListener('click',function(){
+        if(blocked){
+          toast(c.code+' já está pendente no '+openPl.map(function(p){return p.sem+'º';}).join(', ')+'. Lance a situação dela antes de repetir.',true);
+          return;
+        }
+        if(semList(sem).indexOf(c.code)>=0){ toast('Já está nesse semestre.',true); return; }
+        if(semCredits(sem)+c.cr>40){ toast('Passaria de 40 créditos no semestre.',true); return; }
+        S.plan[sem]=semList(sem).concat([c.code]);
+        if(c.elet && S.elet.indexOf(c.code)<0) S.elet.push(c.code);
+        closeModal(); renderAll(); toast(c.code+' adicionada ao '+sem+'º semestre.');
+      });
+      return b;
+    }
+    if(fora.length){
+      pick.appendChild(el('div','head','Fora do planejador · '+fora.length));
+      fora.slice(0,200).forEach(function(c){ pick.appendChild(row(c)); });
+    }
+    if(dentro.length){
+      pick.appendChild(el('div','head','Já no planejador · '+dentro.length));
+      dentro.slice(0,200).forEach(function(c){ pick.appendChild(row(c)); });
+    }
+    if(!fora.length && !dentro.length) pick.appendChild(el('div','empty','Nada encontrado com esse termo.'));
+  }
+  inp.addEventListener('input',draw); draw();
+  $('#veil').classList.add('on'); inp.focus();
+}
+
+/* --- disciplina fora da grade --- */
+function openCustom(sem){
+  var m=$('#modal'); m.innerHTML='';
+  var hd=el('div','modal-hd'); hd.appendChild(el('b',null,'Disciplina fora da grade — '+sem+'º semestre'));
+  var cl=el('button','btn sm','Fechar'); cl.addEventListener('click',closeModal); hd.appendChild(cl);
+  m.appendChild(hd);
+  var bd=el('div','modal-bd');
+  bd.appendChild(el('p','hint','Para optativas livres, disciplinas de outro instituto ou qualquer coisa que não esteja na grade.'));
+  var r=el('div','row2');
+  var f1=el('div','field'); f1.appendChild(el('label',null,'Código')); var i1=el('input'); i1.placeholder='ex.: PCS3345'; f1.appendChild(i1);
+  var f2=el('div','field'); f2.appendChild(el('label',null,'Créditos-aula')); var i2=el('input'); i2.type='number'; i2.min='0'; i2.max='20'; i2.value='2'; f2.appendChild(i2);
+  r.appendChild(f1); r.appendChild(f2); bd.appendChild(r);
+  var f3=el('div','field'); f3.appendChild(el('label',null,'Nome da disciplina')); var i3=el('input'); i3.placeholder='ex.: Laboratório Digital B'; f3.appendChild(i3);
+  bd.appendChild(f3);
+  m.appendChild(bd);
+  var ft=el('div','modal-ft');
+  var ok=el('button','btn primary','Adicionar disciplina');
+  ok.addEventListener('click',function(){
+    var code=i1.value.trim().toUpperCase(), name=i3.value.trim(), cr=+i2.value;
+    if(!code||!name){ toast('Preencha código e nome.',true); return; }
+    if(course(code) && !S.custom[code]){ toast('Esse código já existe na grade. Use "Da grade".',true); return; }
+    if(allSems().some(function(s){return inPlan(code,s);})){ toast(code+' já está no planejador.',true); return; }
+    if(semCredits(sem)+cr>40){ toast('Passaria de 40 créditos no semestre.',true); return; }
+    S.custom[code]={code:code,name:name,cr:cr,sem:sem};
+    S.plan[sem]=semList(sem).concat([code]);
+    closeModal(); renderAll(); toast(code+' adicionada.');
+  });
+  var cancel=el('button','btn','Cancelar'); cancel.addEventListener('click',closeModal);
+  ft.appendChild(cancel); ft.appendChild(ok); m.appendChild(ft);
+  $('#veil').classList.add('on'); i1.focus();
+}
+
+/* --- escolher eletivas --- */
+function openElectives(){
+  var eg=electiveGroups();
+  var keys=Object.keys(eg);
+  var m=$('#modal'); m.innerHTML='';
+  var hd=el('div','modal-hd'); hd.appendChild(el('b',null,'Disciplinas eletivas'));
+  var cl=el('button','btn sm','Fechar'); cl.addEventListener('click',closeModal); hd.appendChild(cl);
+  m.appendChild(hd);
+  var bd=el('div','modal-bd');
+  if(!keys.length){
+    bd.appendChild(el('div','empty','A ênfase e o módulo escolhidos não têm optativas eletivas para selecionar.'));
+  } else {
+    bd.appendChild(el('p','hint','Marque as disciplinas que pretende cursar. Só as marcadas entram no planejador e nos cálculos de crédito.'));
+  }
+  keys.forEach(function(k){
+    var need=ELECTIVE_RULES[k]||12;
+    var box=el('div','eg');
+    var h=el('div','eg-hd');
+    h.appendChild(el('b',null, ELECTIVE_LABEL[k] || 'Eletivas'));
+    var cnt=el('span',null,''); h.appendChild(cnt);
+    box.appendChild(h);
+    function refresh(){
+      var cr=electiveCredits(k);
+      cnt.textContent=cr+'/'+need+' créditos';
+      cnt.className = cr>=need ? 'full' : 'short';
+    }
+    eg[k].forEach(function(c){
+      var lab=el('label');
+      var cb=el('input'); cb.type='checkbox'; cb.checked=S.elet.indexOf(c.code)>=0;
+      cb.addEventListener('change',function(){
+        if(cb.checked){ if(S.elet.indexOf(c.code)<0) S.elet.push(c.code); }
+        else {
+          var cs=courseState(c.code);
+          if(cs.at.length){
+            allSems().forEach(function(s){
+              if(inPlan(c.code,s)){ S.plan[s]=semList(s).filter(function(x){return x!==c.code;}); setStatus(c.code,s,null); }
+            });
+          }
+          S.elet=S.elet.filter(function(x){return x!==c.code;});
+        }
+        refresh(); CAT=catalog(); renderMetrics(); renderConsulta(); renderPlan(); renderDps();
+      });
+      lab.appendChild(cb);
+      var t=el('div');
+      t.appendChild(el('div','c-name',c.name));
+      t.appendChild(el('div','c-code',c.code+' · '+c.cr+' cr'+((c.req&&c.req.length)?' · requisito: '+c.req.join(', '):'')));
+      lab.appendChild(t);
+      box.appendChild(lab);
+    });
+    refresh();
+    bd.appendChild(box);
+  });
+  m.appendChild(bd);
+  var ft=el('div','modal-ft');
+  var org=el('button','btn','Fechar e reorganizar');
+  org.addEventListener('click',function(){ closeModal(); autoOrganize(); renderAll(); toast('Eletivas atualizadas e grade reorganizada.'); });
+  var done=el('button','btn primary','Concluir');
+  done.addEventListener('click',function(){ closeModal(); renderAll(); });
+  ft.appendChild(org); ft.appendChild(done); m.appendChild(ft);
+  $('#veil').classList.add('on');
+}
+
+/* ============================================================
+   7. CONTROLES
+   ============================================================ */
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', S.theme);
+  $('#themeBtn').textContent = S.theme==='dark' ? 'Modo claro' : 'Modo escuro';
+}
+function syncControls(){
+  $('#inYear').value=S.inYear; $('#inPer').value=S.inPer;
+  $('#emph').value=S.emph; $('#mod').value=S.mod;
+  $('#maxCr').value=S.maxCr; $('#fillMode').value=S.fillMode;
+}
+
+Array.prototype.forEach.call(document.querySelectorAll('nav.tabs button'),function(b){
+  b.addEventListener('click',function(){
+    Array.prototype.forEach.call(document.querySelectorAll('nav.tabs button'),function(x){x.setAttribute('aria-selected','false');});
+    b.setAttribute('aria-selected','true');
+    Array.prototype.forEach.call(document.querySelectorAll('.panel'),function(p){p.classList.remove('on');});
+    $('#p-'+b.dataset.tab).classList.add('on');
+  });
+});
+
+$('#themeBtn').addEventListener('click',function(){
+  S.theme = S.theme==='dark' ? 'light' : 'dark';
+  applyTheme(); store.set('poli.theme',S.theme); persistState();
+});
+$('#inYear').addEventListener('change',function(e){ S.inYear=+e.target.value||2026; renderAll(); });
+$('#inPer').addEventListener('change',function(e){ S.inPer=+e.target.value; autoOrganize(); renderAll(); });
+$('#emph').addEventListener('change',function(e){ S.emph=e.target.value; refreshCat(); autoOrganize(); renderAll(); });
+$('#mod').addEventListener('change',function(e){
+  S.mod=e.target.value; refreshCat(); autoOrganize(); renderAll();
+  toast(MOD_LABEL[S.mod]+' — '+MOD_NOTE[S.mod]);
+});
+$('#fillMode').addEventListener('change',function(e){ S.fillMode=e.target.value; renderAll(); });
+$('#maxCr').addEventListener('change',function(e){
+  var v=+e.target.value;
+  if(v>40){ v=40; toast('O teto do sistema é 40 créditos por semestre.',true); }
+  if(v<12){ v=12; toast('O mínimo é 12 créditos por semestre.',true); }
+  e.target.value=v; S.maxCr=v; renderAll();
+});
+
+$('#btnAuto').addEventListener('click',function(){ autoOrganize(); renderAll(); toast('Grade reorganizada pelas regras do curso.'); });
+$('#btnEletivas').addEventListener('click',openElectives);
+$('#btnEletivas2').addEventListener('click',openElectives);
+$('#btnAddSem').addEventListener('click',function(){
+  if(S.nSem>=15){ toast('O curso tem duração máxima de 15 semestres.',true); return; }
+  S.nSem++; S.plan[S.nSem]=S.plan[S.nSem]||[]; renderAll();
+});
+$('#btnClear').addEventListener('click',function(){ S.status={}; S.fixed={}; renderAll(); toast('Todas as situações e fixações foram apagadas.'); });
+$('#btnDpReset').addEventListener('click',function(){
+  function bySem(a,b){ var ca=course(a),cb=course(b); if(!ca||!cb) return 0; return ca.sem-cb.sem || a.localeCompare(b); }
+  S.dpOrder.odd.sort(bySem); S.dpOrder.even.sort(bySem); renderDps(); toast('Prioridades reordenadas.');
+});
+$('#btnSaveScn').addEventListener('click',function(){
+  var n=$('#scnName').value.trim()||('Cenário '+(scenarios.length+1));
+  scenarios.push({name:n,date:new Date().toLocaleString('pt-BR'),data:JSON.parse(JSON.stringify(S))});
+  $('#scnName').value=''; persistScn(); renderScn(); toast('Cenário "'+n+'" salvo.');
+});
+$('#btnExport').addEventListener('click',function(){ $('#io').value=JSON.stringify(S); toast('Texto gerado. Copie e guarde onde quiser.'); });
+$('#btnImport').addEventListener('click',function(){
+  try{
+    var o=JSON.parse($('#io').value);
+    if(!o || !o.plan) throw 0;
+    S=Object.assign(freshState(),o);
+    applyTheme(); syncControls(); renderAll(); toast('Plano carregado.');
+  }catch(e){ toast('O texto colado não é um plano válido.',true); }
+});
+
+setInterval(persistState,4000);
+window.addEventListener('beforeunload',persistState);
+
+/* ============================================================
+   8. INICIALIZAÇÃO
+   ============================================================ */
+(function init(){
+  var saved=store.get('poli.state');
+  if(saved){ try{ S=Object.assign(freshState(),JSON.parse(saved)); }catch(e){} }
+  var th=store.get('poli.theme'); if(th) S.theme=th;
+  if(!S.theme) S.theme='dark';
+  var scn=store.get('poli.scn');
+  if(scn){ try{ scenarios=JSON.parse(scn)||[]; }catch(e){} }
+  applyTheme(); syncControls(); refreshCat();
+  if(!Object.keys(S.plan).length) autoOrganize();
+  renderAll();
+})();
+</script>
+</body>
+</html>
